@@ -7,7 +7,7 @@ order management, shipping zones, coupons, payments, and admin operations.
 
 
 
-you go to the project file named gadget-ecom then enter into the cmd, then in the the cmd type
+you go to the project file named then enter into the cmd, then in the the cmd type
 
 "cd frontend" then
 "npm install --legacy-peer-deps" then
@@ -25,6 +25,4 @@ for the backend
 Now the command will be :
 
 This is my html file now fix the page with this html and as my project is react vite jsx project so you convert the html into vite react jsx file and fix my page now
-
-
 
