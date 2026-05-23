@@ -160,8 +160,9 @@ const Home = lazy(() => import("./Home/pages/Home"));
 const MarketplaceHomeFloors = lazy(
   () => import("./Home/pages/MarketplaceHomeFloors"),
 );
+const AboutUs = lazy(() => import("./Home/pages/AboutUs"));
 const Contact = lazy(() => import("./Home/pages/Contact"));
-const ProductDetails = lazy(() => import("./Home/subPages/ProductDetails"));
+const ProductSingle = lazy(() => import("./Home/subPages/ProductSingle"));
 const ProductGrid = lazy(() => import("./Home/subPages/ProductGrid"));
 const AddToCart = lazy(() => import("./Home/components/AddToCart"));
 const CheckOut = lazy(() => import("./Home/components/CheckOut"));
@@ -174,6 +175,7 @@ const MyWishlist = lazy(() => import("./pages/MyWishlist"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Navbar = lazy(() => import("./Home/components/Navbar"));
 const Footer = lazy(() => import("./Home/components/Footer"));
+
 
 function HomePage() {
   return <Home />;
@@ -308,13 +310,12 @@ function PublicLayout() {
             <Route path="/products" element={<Navigate to="/shop" replace />} />
             <Route path="/compare" element={<CompareProducts />} />
             <Route path="/wishlist" element={<MyWishlist />} />
-
             {/* Single product */}
-            <Route path="/product/:id" element={<ProductDetails />} />
+            <Route path="/product/:id" element={<ProductSingle />} />
 
-            {/* Deprecated pages */}
-            <Route path="/about" element={<Navigate to="/" replace />} />
-            <Route path="/about-us" element={<Navigate to="/" replace />} />
+            {/* Static pages */}
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/about-us" element={<Navigate to="/about" replace />} />
             <Route path="/blog" element={<Navigate to="/" replace />} />
 
             {/* Static pages */}

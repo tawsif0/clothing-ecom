@@ -354,7 +354,7 @@ const ModuleWebsiteSetup = () => {
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <input
-                  value={settings.website.storeName}
+                  value={settings?.website?.storeName || ""}
                   onChange={(event) =>
                     updateNested("website", "storeName", event.target.value)
                   }
@@ -362,7 +362,7 @@ const ModuleWebsiteSetup = () => {
                   className={inputClass}
                 />
                 <input
-                  value={settings.website.tagline}
+                  value={settings?.website?.tagline || ""}
                   onChange={(event) =>
                     updateNested("website", "tagline", event.target.value)
                   }
@@ -736,7 +736,7 @@ const ModuleWebsiteSetup = () => {
               </p>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <input
-                  value={settings.contact.address}
+                  value={settings?.contact?.address || ""}
                   onChange={(event) =>
                     updateNested("contact", "address", event.target.value)
                   }
@@ -744,7 +744,7 @@ const ModuleWebsiteSetup = () => {
                   className={inputClass}
                 />
                 <input
-                  value={settings.contact.addressLink}
+                  value={settings?.contact?.addressLink || ""}
                   onChange={(event) =>
                     updateNested("contact", "addressLink", event.target.value)
                   }
@@ -752,7 +752,7 @@ const ModuleWebsiteSetup = () => {
                   className={inputClass}
                 />
                 <input
-                  value={settings.contact.phone1}
+                  value={settings?.contact?.phone1 || ""}
                   onChange={(event) =>
                     updateNested("contact", "phone1", event.target.value)
                   }
@@ -760,7 +760,7 @@ const ModuleWebsiteSetup = () => {
                   className={inputClass}
                 />
                 <input
-                  value={settings.contact.phone2}
+                  value={settings?.contact?.phone2 || ""}
                   onChange={(event) =>
                     updateNested("contact", "phone2", event.target.value)
                   }
@@ -768,7 +768,7 @@ const ModuleWebsiteSetup = () => {
                   className={inputClass}
                 />
                 <input
-                  value={settings.contact.email}
+                  value={settings?.contact?.email || ""}
                   onChange={(event) =>
                     updateNested("contact", "email", event.target.value)
                   }
@@ -786,7 +786,7 @@ const ModuleWebsiteSetup = () => {
               </p>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <input
-                  value={settings.social.facebook}
+                  value={settings?.social?.facebook || ""}
                   onChange={(event) =>
                     updateNested("social", "facebook", event.target.value)
                   }
@@ -794,7 +794,7 @@ const ModuleWebsiteSetup = () => {
                   className={inputClass}
                 />
                 <input
-                  value={settings.social.whatsapp}
+                  value={settings?.social?.whatsapp || ""}
                   onChange={(event) =>
                     updateNested("social", "whatsapp", event.target.value)
                   }
@@ -802,7 +802,7 @@ const ModuleWebsiteSetup = () => {
                   className={inputClass}
                 />
                 <input
-                  value={settings.social.instagram}
+                  value={settings?.social?.instagram || ""}
                   onChange={(event) =>
                     updateNested("social", "instagram", event.target.value)
                   }
@@ -810,7 +810,7 @@ const ModuleWebsiteSetup = () => {
                   className={inputClass}
                 />
                 <input
-                  value={settings.social.youtube}
+                  value={settings?.social?.youtube || ""}
                   onChange={(event) =>
                     updateNested("social", "youtube", event.target.value)
                   }
@@ -1196,7 +1196,7 @@ const ModuleWebsiteSetup = () => {
                 Policies & Footer
               </h2>
               <RichTextEditor
-                value={settings.policies.shipmentPolicy}
+                value={settings?.policies?.shipmentPolicy || ""}
                 onChange={(value) =>
                   updateNested("policies", "shipmentPolicy", value)
                 }
@@ -1204,7 +1204,7 @@ const ModuleWebsiteSetup = () => {
                 minHeight={160}
               />
               <RichTextEditor
-                value={settings.policies.deliveryPolicy}
+                value={settings?.policies?.deliveryPolicy || ""}
                 onChange={(value) =>
                   updateNested("policies", "deliveryPolicy", value)
                 }
@@ -1212,7 +1212,7 @@ const ModuleWebsiteSetup = () => {
                 minHeight={160}
               />
               <RichTextEditor
-                value={settings.policies.termsConditions}
+                value={settings?.policies?.termsConditions || ""}
                 onChange={(value) =>
                   updateNested("policies", "termsConditions", value)
                 }
@@ -1220,7 +1220,7 @@ const ModuleWebsiteSetup = () => {
                 minHeight={160}
               />
               <RichTextEditor
-                value={settings.policies.returnPolicy}
+                value={settings?.policies?.returnPolicy || ""}
                 onChange={(value) =>
                   updateNested("policies", "returnPolicy", value)
                 }
@@ -1228,7 +1228,7 @@ const ModuleWebsiteSetup = () => {
                 minHeight={160}
               />
               <RichTextEditor
-                value={settings.policies.privacyPolicy}
+                value={settings?.policies?.privacyPolicy || ""}
                 onChange={(value) =>
                   updateNested("policies", "privacyPolicy", value)
                 }

@@ -689,6 +689,12 @@ function ProductModify({ initialMode = "list" }) {
       return;
     }
 
+    // If the product type is "Popular", show all categories regardless of type
+    if (type.toLowerCase() === "popular") {
+      setFilteredCategories(categoriesList);
+      return;
+    }
+
     // Filter categories by type (match category.type with productType)
     const filtered = categoriesList.filter((cat) => {
       // If category has no type, show it for General products

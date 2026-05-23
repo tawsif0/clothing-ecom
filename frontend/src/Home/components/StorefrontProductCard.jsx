@@ -3,10 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FiEye, FiHeart, FiShoppingBag, FiShuffle } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import {
-  getPublicStockBadgeText,
-  isPublicStockVisible,
-} from "../../utils/publicProduct";
+import { getPublicStockQuantity } from "../../utils/publicProduct";
 import { selectPublicSettings } from "../../store/publicSettingsSlice";
 import {
   selectWishlistPendingIds,
@@ -221,12 +218,16 @@ const StorefrontProductCard = ({
       .toLowerCase() !== categoryLabel.toLowerCase()
       ? String(badgeText).trim()
       : "";
-  const stockBadgeText = useMemo(
-    () => getPublicStockBadgeText(product, null, settings),
+  const stockQuantity = useMemo(
+    () => {
+      const qty = getPublicStockQuantity(product, null, settings);
+      return qty;
+    },
     [product, settings],
   );
-  const showStockBadge =
-    Boolean(stockBadgeText) && isPublicStockVisible(product, settings);
+  const showOutOfStock = stockQuantity !== null && stockQuantity === 0;
+  const stockBadgeText = showOutOfStock ? "Out of stock" : (stockQuantity !== null ? `Stock ${stockQuantity}` : "");
+  const showStockBadge = showOutOfStock;
   const showCardCartButton =
     showCartButton && !hasVariantOptionPricing(product);
   const isCompared = compareItems.some(
@@ -408,7 +409,7 @@ const StorefrontProductCard = ({
         <div className="space-y-1.5">
           <h3
             title={String(product?.title || "").trim()}
-            className="line-clamp-1 text-[13px] font-semibold leading-snug text-black transition-colors group-hover:text-gray-700 sm:text-sm"
+            className="line-clamp-1 text-[13px] font-semibold leading-snug text-black transition-colors sm:text-sm"
           >
             {title || product?.title}
           </h3>
@@ -429,11 +430,11 @@ const StorefrontProductCard = ({
 
           {showStockBadge || pricing.isTba ? (
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              {showStockBadge ? (
-                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                  {stockBadgeText}
-                </span>
-              ) : null}
+                {showStockBadge ? (
+                  <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                    {stockBadgeText}
+                  </span>
+                ) : null}
               {pricing.isTba ? (
                 <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
                   TBA

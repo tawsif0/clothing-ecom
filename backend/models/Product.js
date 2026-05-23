@@ -263,6 +263,7 @@ const productSchema = new mongoose.Schema({
   productType: {
     type: String,
     enum: [
+      "Women",
       "General",
       "Popular",
       "Hot deals",

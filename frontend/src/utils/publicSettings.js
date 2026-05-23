@@ -279,10 +279,10 @@ const DEFAULT_SETTINGS = {
     recommendedEyebrow: "Recommended shelf",
     recommendedTitle: "New arrivals for the store",
     recommendedButtonLabel: "View catalog",
-    catalogTitle: DEFAULT_CATALOG_TITLE,
     catalogDescription: DEFAULT_CATALOG_DESCRIPTION,
     footerCaption: "Built for Bangladesh ecommerce operations",
     navQuickLinks: cloneNavLinks(),
+    bentoCategories: [],
   },
   seoAnalytics: {
     hasExplicitEntries: false,
@@ -490,6 +490,9 @@ const mergeSettings = (incoming = {}) => {
       navQuickLinks: normalizeStorefrontNavLinks(
         incoming?.storefront?.navQuickLinks,
       ),
+      bentoCategories: Array.isArray(incoming?.storefront?.bentoCategories)
+        ? incoming.storefront.bentoCategories
+        : DEFAULT_SETTINGS.storefront.bentoCategories,
     },
     seoAnalytics: {
       ...DEFAULT_SETTINGS.seoAnalytics,

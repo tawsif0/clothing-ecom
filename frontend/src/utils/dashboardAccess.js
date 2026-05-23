@@ -74,6 +74,7 @@ const ADMIN_ALLOWED_TABS = new Set([
   "module-admin-users",
   "module-super-admin",
   "module-abandoned",
+  "module-collection-setup",
 ]);
 
 const USER_ALLOWED_TABS = new Set([
@@ -108,6 +109,7 @@ const ADMIN_TAB_PERMISSION_MAP = {
   "create-banner": "manageWebsite",
   "modify-banner": "manageWebsite",
   "module-website-setup": "manageWebsite",
+  "module-collection-setup": "manageWebsite",
   "module-seo-analytics": "manageWebsite",
   "contacted-list": "manageWebsite",
 };

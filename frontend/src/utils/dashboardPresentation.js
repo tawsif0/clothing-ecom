@@ -192,6 +192,12 @@ const TAB_META = {
     description:
       "Control branding, integrations, policies, and storefront behavior.",
   },
+  "module-collection-setup": {
+    section: "Brand & Storefront",
+    title: "Collection Setup",
+    description:
+      "Manage Bento Grid and other collection-based storefront sections.",
+  },
   "module-seo-analytics": {
     section: "Brand & Storefront",
     title: "SEO & Analytics",

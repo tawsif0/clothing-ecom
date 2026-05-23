@@ -68,6 +68,7 @@ mongoose
   .connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    dbName: process.env.MONGODB_DBNAME,
     maxPoolSize: MONGO_MAX_POOL_SIZE,
     minPoolSize: MONGO_MIN_POOL_SIZE,
     maxIdleTimeMS: 60000,

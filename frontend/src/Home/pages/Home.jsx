@@ -1,14 +1,17 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { FaFire, FaShoppingBag } from "react-icons/fa";
-import { FaBolt, FaLayerGroup, FaRocket } from "react-icons/fa6";
-import Banner from "./Banner";
-import BrandLogoMarquee from "../components/BrandLogoMarquee";
-import CategoryLogoMarquee from "../components/CategoryLogoMarquee";
-import ProductShowcaseSection from "../components/ProductShowcaseSection";
+import React, { useEffect, useMemo, useState } from "react";
+import NewHeroSection from "../components/NewHeroSection";
+import TrustedBrands from "../components/TrustedBrands";
+import TrustBar from "../components/TrustBar";
+import CategoryBentoGrid from "../components/CategoryBentoGrid";
+import FeaturedProducts from "../components/FeaturedProducts";
+import HotDeals from "../components/HotDeals";
+import BrandStory from "../components/BrandStory";
+import LatestProductsOffset from "../components/LatestProductsOffset";
 import usePublicSettings from "../../hooks/usePublicSettings";
 import { formatDocumentTitle } from "../../utils/publicSettings";
 import { applySeoMetadata } from "../../utils/seoManager";
 import { fetchHomeCatalog } from "../../utils/homeCatalog";
+import DynamicCollectionSection from "../components/DynamicCollectionSection";
 import {
   applyMarketingTemplate,
   getActiveMarketingEntry,
@@ -18,57 +21,8 @@ const resolveSectionProducts = (section) => {
   if (!section || !Array.isArray(section.categories)) {
     return [];
   }
-
   return section.categories.flatMap((category) =>
     Array.isArray(category?.products) ? category.products : [],
-  );
-};
-
-const DeferredSection = ({
-  children,
-  minHeightClassName = "min-h-[640px]",
-  rootMargin = "320px 0px",
-}) => {
-  const containerRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    if (isVisible || typeof window === "undefined") return undefined;
-
-    const node = containerRef.current;
-    if (!node) return undefined;
-
-    if (typeof IntersectionObserver === "undefined") {
-      setIsVisible(true);
-      return undefined;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin },
-    );
-
-    observer.observe(node);
-
-    return () => observer.disconnect();
-  }, [isVisible, rootMargin]);
-
-  return (
-    <div ref={containerRef}>
-      {isVisible ? (
-        children
-      ) : (
-        <div
-          aria-hidden="true"
-          className={`${minHeightClassName} bg-white`}
-        />
-      )}
-    </div>
   );
 };
 
@@ -76,6 +30,7 @@ const Home = () => {
   const { settings } = usePublicSettings();
   const [catalog, setCatalog] = useState(null);
 
+  // SEO effect
   useEffect(() => {
     if (!settings) return;
 
@@ -136,111 +91,104 @@ const Home = () => {
     });
   }, [settings]);
 
+  // Fetch catalog data
   useEffect(() => {
     let active = true;
-
     fetchHomeCatalog().then((nextCatalog) => {
       if (active) {
         setCatalog(nextCatalog);
       }
     });
-
     return () => {
       active = false;
     };
   }, []);
 
-  const sectionProducts = useMemo(
-    () => ({
-      Popular: resolveSectionProducts(catalog?.sections?.Popular),
-      "Hot deals": resolveSectionProducts(catalog?.sections?.["Hot deals"]),
-      General: resolveSectionProducts(catalog?.sections?.General),
-      "Best Selling": resolveSectionProducts(catalog?.sections?.["Best Selling"]),
-      Latest: resolveSectionProducts(catalog?.sections?.Latest),
-    }),
-    [catalog],
-  );
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -50px 0px"
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, observerOptions);
+
+    const sections = document.querySelectorAll('section');
+    sections.forEach(section => {
+      observer.observe(section);
+    });
+
+    return () => {
+      sections.forEach(section => observer.unobserve(section));
+    };
+  }, []);
+
+  const sectionProducts = useMemo(() => {
+    const popular = resolveSectionProducts(catalog?.sections?.Popular);
+    const hotDeals = resolveSectionProducts(catalog?.sections?.["Hot deals"]);
+    const general = resolveSectionProducts(catalog?.sections?.General);
+    const latest = resolveSectionProducts(catalog?.sections?.Latest);
+
+    // Provide robust fallbacks if the user hasn't explicitly set product types
+    return {
+      Popular: popular.length > 0 ? popular : general.slice(0, 3),
+      "Hot deals": hotDeals.length > 0 ? hotDeals : general.slice(3, 5),
+      General: general,
+      Latest: latest.length > 0 ? latest : general.slice(5, 7),
+    };
+  }, [catalog]);
 
   return (
-    <>
-      <Banner />
-      <DeferredSection minHeightClassName="min-h-[240px]">
-        {settings?.storefront?.showCategoryMarquee !== false ? (
-          <CategoryLogoMarquee />
-        ) : null}
-      </DeferredSection>
-      <DeferredSection minHeightClassName="min-h-[820px]">
-        <ProductShowcaseSection
-          sectionId="top-categories"
-          productType="Popular"
-          products={sectionProducts.Popular}
-          variant="popular"
-          eyebrow="Trending Now"
-          title="Popular Products"
-          description="Curated technology with a darker premium presentation, built from your live store data."
-          icon={FaFire}
-          badgeText="Limited"
-          viewAllNoun="Popular Products"
-        />
-      </DeferredSection>
-      <DeferredSection minHeightClassName="min-h-[820px]">
-        <ProductShowcaseSection
-          productType="Hot deals"
-          products={sectionProducts["Hot deals"]}
-          variant="hot-deals"
-          eyebrow="Limited Time Offers"
-          title="Hot Deals"
-          description="Exceptional value on the products your shoppers are most likely to grab quickly."
-          icon={FaBolt}
-          badgeText="Hot Deal"
-          viewAllNoun="Hot Deals"
-        />
-      </DeferredSection>
-      <DeferredSection minHeightClassName="min-h-[240px]">
-        {settings?.storefront?.showBrandMarquee !== false ? (
-          <BrandLogoMarquee />
-        ) : null}
-      </DeferredSection>
-      <DeferredSection minHeightClassName="min-h-[820px]">
-        <ProductShowcaseSection
-          productType="General"
-          products={sectionProducts.General}
-          variant="featured"
-          eyebrow="Featured Collections"
-          title="Featured Products"
-          description="Editorial-style catalogue highlights for the products you want to feel premium and carefully chosen."
-          icon={FaShoppingBag}
-          badgeText="Curated"
-          viewAllNoun="Products"
-        />
-      </DeferredSection>
-      <DeferredSection minHeightClassName="min-h-[820px]">
-        <ProductShowcaseSection
-          productType="Best Selling"
-          products={sectionProducts["Best Selling"]}
-          variant="best-selling"
-          eyebrow="Hot Sellers"
-          title="Best Selling Products"
-          description="A stronger gallery for the products already proving themselves with customers."
-          icon={FaLayerGroup}
-          badgeText="Best Seller"
-          viewAllNoun="Best Sellers"
-        />
-      </DeferredSection>
-      <DeferredSection minHeightClassName="min-h-[820px]">
-        <ProductShowcaseSection
-          productType="Latest"
-          products={sectionProducts.Latest}
-          variant="latest"
-          eyebrow="New Arrivals"
-          title="Latest Products"
-          description="Fresh inventory presented with a lighter launch-style section that feels new the moment it loads."
-          icon={FaRocket}
-          badgeText="New"
-          viewAllNoun="Latest Products"
-        />
-      </DeferredSection>
-    </>
+    <div className="bg-surface text-on-surface font-body-md overflow-x-hidden">
+      <NewHeroSection />
+      {settings?.storefront?.showBrandMarquee !== false && <TrustedBrands />}
+      <TrustBar />
+      <CategoryBentoGrid />
+      <FeaturedProducts products={sectionProducts.Popular} />
+      <HotDeals products={sectionProducts["Hot deals"]} />
+      <BrandStory />
+      <LatestProductsOffset products={sectionProducts.Latest} />
+      
+      {/* Trust Indicators Footer Top */}
+      <section className="py-12 bg-white border-t border-surface-container">
+        <div className="max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="flex items-center gap-4">
+            <span className="material-symbols-outlined text-primary text-2xl">local_shipping</span>
+            <div>
+              <p className="font-bold text-sm">Fast Shipping</p>
+              <p className="text-xs text-on-surface-variant">Smooth delivery flow</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="material-symbols-outlined text-primary text-2xl">undo</span>
+            <div>
+              <p className="font-bold text-sm">Easy Returns</p>
+              <p className="text-xs text-on-surface-variant">Simple return support</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="material-symbols-outlined text-primary text-2xl">sell</span>
+            <div>
+              <p className="font-bold text-sm">Offers And Discounts</p>
+              <p className="text-xs text-on-surface-variant">Fresh deals for shoppers</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="material-symbols-outlined text-primary text-2xl">headset_mic</span>
+            <div>
+              <p className="font-bold text-sm">Customer Support</p>
+              <p className="text-xs text-on-surface-variant">Help when you need it</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 };
 

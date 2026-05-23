@@ -146,7 +146,9 @@ const Banner = () => {
   const fetchBanners = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${baseUrl}/banners/public?type=hero&page=home`);
+      const response = await fetch(`${baseUrl}/banners/public?type=hero&page=home`, {
+        cache: "no-store"
+      });
       const data = await response.json();
 
       let bannersData = [];

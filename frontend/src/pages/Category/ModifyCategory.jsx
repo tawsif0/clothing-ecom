@@ -625,7 +625,7 @@ function ModifyCategory() {
                             <SearchableSelect
                               value={editType}
                               onChange={setEditType}
-                              options={categoryTypes.map((type) => ({
+                              options={CATEGORY_TYPES.map((type) => ({
                                 value: type,
                                 label: type,
                               }))}

@@ -80,6 +80,7 @@ const ProductCreate = () => {
   // Product type options - same as category types
   const productTypes = [
     "General",
+    "Women",
     "Popular",
     "Hot deals",
     "Best Selling",
@@ -186,6 +187,12 @@ const ProductCreate = () => {
 
   const filterCategoriesByType = (type, categoriesList = categories) => {
     const selectedKey = normalizeTypeKey(type) || "general";
+
+    // If the product type is "Popular", show all categories regardless of type
+    if (selectedKey === "popular") {
+      setFilteredCategories(categoriesList);
+      return;
+    }
 
     const filtered = (
       Array.isArray(categoriesList) ? categoriesList : []

@@ -183,7 +183,7 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="bg-white text-slate-900">
+    <footer className="bg-[var(--app-surface-muted)] text-slate-900">
       <div className="py-12 md:py-16">
         <div className="site-shell">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
@@ -200,8 +200,10 @@ const Footer = () => {
                       className="h-14 w-auto max-w-[220px] object-contain"
                     />
                   ) : (
-                    <h2 className="text-3xl font-bold transition-opacity hover:opacity-90">
-                      <span className="text-slate-900">{brandLogoText}</span>
+                    <h2 className="text-3xl font-semibold italic tracking-tight transition-opacity hover:opacity-90">
+                      <span style={{ color: "var(--brand-theme-color)" }}>
+                        {brandLogoText}
+                      </span>
                     </h2>
                   )}
                 </button>
@@ -272,7 +274,7 @@ const Footer = () => {
             </div>
 
             <div className="lg:col-span-3">
-              <h4 className="mb-6 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
+              <h4 className="mb-6 border-b border-slate-200 pb-2 text-xs font-bold uppercase tracking-[0.3em] text-slate-900">
                 Quick Links
               </h4>
               <ul className="space-y-3">
@@ -291,7 +293,7 @@ const Footer = () => {
             </div>
 
             <div className="lg:col-span-4">
-              <h4 className="mb-6 border-b border-slate-200 pb-2 text-lg font-bold text-slate-900">
+              <h4 className="mb-6 border-b border-slate-200 pb-2 text-xs font-bold uppercase tracking-[0.3em] text-slate-900">
                 Connect With Us
               </h4>
 

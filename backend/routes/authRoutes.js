@@ -86,6 +86,20 @@ router.post(
   handleMulterError,
   authController.uploadWebsiteHeaderIcon,
 );
+router.post(
+  "/admin/settings/brand-story-image-upload",
+  auth,
+  upload.single("image"),
+  handleMulterError,
+  authController.uploadBrandStoryImage,
+);
+router.post(
+  "/admin/settings/upload-generic-image",
+  auth,
+  upload.single("image"),
+  handleMulterError,
+  authController.uploadGenericImage,
+);
 router.get(
   "/admin/settings/sitemap.xml",
   auth,

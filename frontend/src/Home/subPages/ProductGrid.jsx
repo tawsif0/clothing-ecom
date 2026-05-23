@@ -1026,7 +1026,7 @@ const ProductGrid = () => {
                     )) && (
                   <button
                     onClick={resetFilters}
-                    className="text-sm text-gray-500 hover:text-black transition-colors"
+                    className="text-xs font-semibold uppercase tracking-widest text-secondary hover:text-primary transition-colors"
                   >
                     Reset All
                   </button>
@@ -1056,8 +1056,8 @@ const ProductGrid = () => {
                       }}
                       className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                         selectedCategory === "all"
-                          ? "bg-black text-white"
-                          : "text-gray-600 hover:bg-gray-100"
+                          ? "bg-primary text-on-primary"
+                          : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                       }`}
                     >
                       All Categories
@@ -1071,13 +1071,13 @@ const ProductGrid = () => {
                         }}
                         className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between ${
                           selectedCategory === category._id
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-600 hover:bg-gray-100"
+                            ? "bg-primary text-on-primary"
+                            : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                         }`}
                       >
                         <span>{category.name}</span>
                         {category.type && (
-                          <span className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded">
+                          <span className={`text-xs px-2 py-1 rounded ${selectedCategory === category._id ? "bg-white/20 text-white" : "bg-surface-dim text-on-surface-variant"}`}>
                             {category.type}
                           </span>
                         )}
@@ -1103,8 +1103,8 @@ const ProductGrid = () => {
                       onClick={() => setSelectedCategoryType("all")}
                       className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                         selectedCategoryType === "all"
-                          ? "bg-black text-white"
-                          : "text-gray-600 hover:bg-gray-100"
+                          ? "bg-primary text-on-primary"
+                          : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                       }`}
                     >
                       All Types
@@ -1116,8 +1116,8 @@ const ProductGrid = () => {
                           onClick={() => setSelectedCategoryType(type)}
                           className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                             selectedCategoryType === type
-                              ? "bg-gray-900 text-white"
-                              : "text-gray-600 hover:bg-gray-100"
+                              ? "bg-primary text-on-primary"
+                              : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                           }`}
                         >
                           {type}
@@ -1146,7 +1146,7 @@ const ProductGrid = () => {
 
                 {expandedFilters.price && (
                   <div className="space-y-4">
-                    <div className="hidden items-center justify-between text-sm text-gray-600">
+                    <div className="hidden items-center justify-between text-sm text-on-surface-variant">
                       <span>{priceRange[0].toFixed(2)} Tk</span>
                       <span>{priceRange[1].toFixed(2)} Tk</span>
                     </div>
@@ -1162,9 +1162,9 @@ const ProductGrid = () => {
                       onChange={(e) =>
                         setPriceRange([priceRange[0], parseInt(e.target.value)])
                       }
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-2 bg-surface-dim rounded-lg appearance-none cursor-pointer accent-primary"
                     />
-                    <div className="flex items-center justify-between text-sm text-gray-600">
+                    <div className="flex items-center justify-between text-sm font-label-md text-primary">
                       <span>{priceRange[0].toFixed(2)} Tk</span>
                       <span>{priceRange[1].toFixed(2)} Tk</span>
                     </div>
@@ -1694,10 +1694,10 @@ const ProductGrid = () => {
                         navigate("/shop");
                         setShowMobileFilters(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-lg ${
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                         selectedCategory === "all"
-                          ? "bg-black text-white"
-                          : "text-gray-600 hover:bg-gray-100"
+                          ? "bg-primary text-on-primary"
+                          : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                       }`}
                     >
                       All Categories
@@ -1710,13 +1710,18 @@ const ProductGrid = () => {
                           navigate(`/shop?category=${category._id}`);
                           setShowMobileFilters(false);
                         }}
-                        className={`w-full text-left px-3 py-2 rounded-lg ${
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between ${
                           selectedCategory === category._id
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-600 hover:bg-gray-100"
+                            ? "bg-primary text-on-primary"
+                            : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                         }`}
                       >
-                        {category.name}
+                        <span>{category.name}</span>
+                        {category.type && (
+                          <span className={`text-xs px-2 py-1 rounded ${selectedCategory === category._id ? "bg-white/20 text-white" : "bg-surface-dim text-on-surface-variant"}`}>
+                            {category.type}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -1732,10 +1737,10 @@ const ProductGrid = () => {
                         setSelectedCategoryType("all");
                         setShowMobileFilters(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-lg ${
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                         selectedCategoryType === "all"
-                          ? "bg-black text-white"
-                          : "text-gray-600 hover:bg-gray-100"
+                          ? "bg-primary text-on-primary"
+                          : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                       }`}
                     >
                       All Types
@@ -1748,10 +1753,10 @@ const ProductGrid = () => {
                             setSelectedCategoryType(type);
                             setShowMobileFilters(false);
                           }}
-                          className={`w-full text-left px-3 py-2 rounded-lg ${
+                          className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                             selectedCategoryType === type
-                              ? "bg-gray-900 text-white"
-                              : "text-gray-600 hover:bg-gray-100"
+                              ? "bg-primary text-on-primary"
+                              : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                           }`}
                         >
                           {type}
@@ -1771,7 +1776,7 @@ const ProductGrid = () => {
                 <div>
                   <h4 className="font-semibold text-black mb-3">Price Range</h4>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm text-gray-600">
+                    <div className="hidden items-center justify-between text-sm text-on-surface-variant">
                       <span>{priceRange[0].toFixed(2)} Tk</span>
                       <span>{priceRange[1].toFixed(2)} Tk</span>
                     </div>
@@ -1787,8 +1792,12 @@ const ProductGrid = () => {
                       onChange={(e) =>
                         setPriceRange([priceRange[0], parseInt(e.target.value)])
                       }
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      className="w-full h-2 bg-surface-dim rounded-lg appearance-none cursor-pointer accent-primary"
                     />
+                    <div className="flex items-center justify-between text-sm font-label-md text-primary">
+                      <span>{priceRange[0].toFixed(2)} Tk</span>
+                      <span>{priceRange[1].toFixed(2)} Tk</span>
+                    </div>
                   </div>
                 </div>
 
@@ -1798,7 +1807,7 @@ const ProductGrid = () => {
                       resetFilters();
                       setShowMobileFilters(false);
                     }}
-                    className="flex-1 py-3 bg-gray-100 text-black rounded-full font-semibold text-sm"
+                    className="flex-1 py-3 border border-outline-variant text-on-surface-variant rounded-full font-label-md text-label-md hover:bg-primary hover:text-white hover:border-primary transition-colors"
                   >
                     Reset All
                   </button>

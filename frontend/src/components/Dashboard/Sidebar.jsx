@@ -244,6 +244,11 @@ const getRoleSections = (
             tab: "module-website-setup",
           },
           {
+            name: "Collection Setup",
+            icon: FiSettings,
+            tab: "module-collection-setup",
+          },
+          {
             name: "Contacted Users",
             icon: FiMail,
             tab: "contacted-list",

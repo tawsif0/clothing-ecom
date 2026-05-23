@@ -57,6 +57,9 @@ const ModuleAdminUsers = React.lazy(() => import("./ModuleAdminUsers"));
 const ModuleSuperAdminControl = React.lazy(
   () => import("./ModuleSuperAdminControl"),
 );
+const ModuleCollectionSetup = React.lazy(
+  () => import("./ModuleCollectionSetup"),
+);
 const AdminContactedUsers = React.lazy(() => import("./AdminContactedUsers"));
 const NotificationsCenter = React.lazy(() => import("./NotificationsCenter"));
 
@@ -212,6 +215,8 @@ const TabContent = React.memo(
         return user?.userType === "admin" ? <ModuleBusinessReports /> : null;
       case "module-website-setup":
         return user?.userType === "admin" ? <ModuleWebsiteSetup /> : null;
+      case "module-collection-setup":
+        return user?.userType === "admin" ? <ModuleCollectionSetup /> : null;
       case "module-seo-analytics":
         return user?.userType === "admin" ? <ModuleSeoAnalytics /> : null;
       case "contacted-list":

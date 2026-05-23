@@ -309,7 +309,7 @@ const normalizeStorefrontSettings = (value = {}) => {
   const storefront = isPlainObject(value) ? value : {};
   const trustBullets = normalizeStringList(storefront.trustBullets || []);
 
-  return {
+  const result = {
     showCategoryMarquee:
       storefront.showCategoryMarquee === undefined
         ? true
@@ -435,7 +435,20 @@ const normalizeStorefrontSettings = (value = {}) => {
       storefront.footerCaption || "Built for Bangladesh marketplace operations",
     ).trim(),
     navQuickLinks: normalizeStorefrontNavLinks(storefront.navQuickLinks),
+    bentoCategories: Array.isArray(storefront.bentoCategories)
+      ? storefront.bentoCategories
+      : [],
   };
+
+  Object.keys(storefront).forEach((key) => {
+    if (result[key] === undefined && storefront[key] !== undefined) {
+      if (typeof storefront[key] === "string" || typeof storefront[key] === "boolean" || typeof storefront[key] === "number" || Array.isArray(storefront[key])) {
+        result[key] = storefront[key];
+      }
+    }
+  });
+
+  return result;
 };
 
 const ACCOUNT_INCOME_TYPES = new Set(["income", "adjustment"]);
@@ -1054,6 +1067,7 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   try {
     const { loginId, password } = req.body;
+    console.log("Login attempt:", { loginId, passwordLength: password?.length });
 
     if (!loginId || !password) {
       return res
@@ -1062,6 +1076,7 @@ exports.loginUser = async (req, res) => {
     }
 
     const user = await User.findByCredentials(loginId, password);
+    console.log("User found:", user.email);
     await ensureAdminBootstrapFlags(user);
     user.lastLogin = new Date();
     await user.save();
@@ -1074,6 +1089,7 @@ exports.loginUser = async (req, res) => {
       token,
     });
   } catch (error) {
+    console.error("Login Error:", error.message);
     return res.status(401).json({ error: "Invalid login credentials" });
   }
 };
@@ -1778,6 +1794,7 @@ exports.updateSettings = async (req, res) => {
     };
 
     primaryAdmin.adminSettings = nextSettings;
+    primaryAdmin.markModified("adminSettings");
     await primaryAdmin.save();
     try {
       const sitemapArtifacts = await generateSitemapArtifacts(
@@ -1878,6 +1895,70 @@ exports.uploadWebsiteLogo = async (req, res) => {
   }
 };
 
+exports.uploadBrandStoryImage = async (req, res) => {
+  try {
+    if (!isAdmin(req.user)) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    if (!req.file?.buffer) {
+      return res.status(400).json({ error: "Image file is required" });
+    }
+
+    const primaryAdmin = await getPrimaryAdminUser();
+    if (!primaryAdmin) {
+      return res.status(404).json({ error: "Primary admin account not found" });
+    }
+
+    const currentSettings = isPlainObject(primaryAdmin.adminSettings)
+      ? primaryAdmin.adminSettings
+      : {};
+    const currentStorefront = isPlainObject(currentSettings.storefront)
+      ? currentSettings.storefront
+      : {};
+    const previousPublicId = String(currentStorefront.brandStoryImagePublicId || "").trim();
+
+    const uploaded = await uploadImageBuffer(req.file.buffer, {
+      folder: "marketplace/site-brand",
+      resource_type: "image",
+    });
+
+    if (!uploaded?.secure_url) {
+      return res.status(500).json({ error: "Image upload failed" });
+    }
+
+    const currentSettingsSansAbout = { ...currentSettings };
+    delete currentSettingsSansAbout.about;
+    
+    primaryAdmin.adminSettings = {
+      ...currentSettingsSansAbout,
+      storefront: {
+        ...currentStorefront,
+        brandStoryImage: String(uploaded.secure_url || "").trim(),
+        brandStoryImagePublicId: String(uploaded.public_id || "").trim(),
+      },
+    };
+
+    await primaryAdmin.save();
+
+    if (previousPublicId && previousPublicId !== uploaded.public_id) {
+      await deleteImage(previousPublicId).catch(() => null);
+    }
+
+    clearPublicSettingsCache();
+
+    return res.json({
+      success: true,
+      message: "Brand story image uploaded successfully",
+      imageUrl: String(uploaded.secure_url || "").trim(),
+      settings: buildPublicSettingsPayload(primaryAdmin.adminSettings),
+    });
+  } catch (error) {
+    console.error("Upload brand story image error:", error);
+    return res.status(500).json({ error: error.message || "Server error" });
+  }
+};
+
 exports.uploadWebsiteHeaderIcon = async (req, res) => {
   try {
     if (!isAdmin(req.user)) {
@@ -1941,6 +2022,34 @@ exports.uploadWebsiteHeaderIcon = async (req, res) => {
     });
   } catch (error) {
     console.error("Upload website header icon error:", error);
+    return res.status(500).json({ error: error.message || "Server error" });
+  }
+};
+
+exports.uploadGenericImage = async (req, res) => {
+  try {
+    if (!isAdmin(req.user)) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    if (!req.file?.buffer) {
+      return res.status(400).json({ error: "Image file is required" });
+    }
+
+    const uploaded = await uploadImageBuffer(req.file.buffer, {
+      folder: "marketplace/generic",
+      resource_type: "image",
+    });
+
+    if (!uploaded?.secure_url) {
+      return res.status(500).json({ error: "Image upload failed" });
+    }
+
+    return res.json({
+      success: true,
+      imageUrl: String(uploaded.secure_url || "").trim(),
+    });
+  } catch (error) {
+    console.error("Upload generic image error:", error);
     return res.status(500).json({ error: error.message || "Server error" });
   }
 };
