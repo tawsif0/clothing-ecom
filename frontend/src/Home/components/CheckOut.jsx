@@ -267,9 +267,11 @@ const CheckOut = () => {
   const hasSelectedDistrict = Boolean(String(formData.district || "").trim());
   const requiresTransactionProof = !selectedPaymentMethod
     ? false
-    : selectedPaymentMethod?.requiresTransactionProof === undefined
-      ? true
-      : Boolean(selectedPaymentMethod?.requiresTransactionProof);
+    : isCashOnDeliveryMethod(paymentMethodValue)
+      ? false
+      : selectedPaymentMethod?.requiresTransactionProof === undefined
+        ? true
+        : Boolean(selectedPaymentMethod?.requiresTransactionProof);
   const selectedPaymentAccount = String(
     selectedPaymentMethod?.accountNo || "",
   ).trim();
@@ -935,8 +937,9 @@ const CheckOut = () => {
     const resolvedMethod = selectedPaymentMethod || paymentMethods[0] || null;
     const resolvedPaymentMethodValue =
       paymentMethodValue || normalizePaymentMethodValue(resolvedMethod);
-    const resolvedRequiresProof =
-      resolvedMethod?.requiresTransactionProof === undefined
+    const resolvedRequiresProof = isCashOnDeliveryMethod(resolvedPaymentMethodValue)
+      ? false
+      : resolvedMethod?.requiresTransactionProof === undefined
         ? true
         : Boolean(resolvedMethod?.requiresTransactionProof);
     const resolvedChannelType = String(

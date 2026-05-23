@@ -2006,17 +2006,21 @@ const resolvePaymentMethodSelection = async ({
     methodDoc?.type || requestedMethod || "",
   ).trim();
 
+  const isCod = inferredChannel === "cod" || /^(cod|cash on delivery)$/i.test(resolvedMethodName);
+
   return {
     methodDoc,
     methodName: resolvedMethodName,
     channelType: inferredChannel,
     methodCode: safeString(methodDoc?.code),
     defaultAccountNo: String(methodDoc?.accountNo || "").trim(),
-    requiresTransactionProof: methodDoc
-      ? methodDoc.requiresTransactionProof === undefined
-        ? true
-        : Boolean(methodDoc.requiresTransactionProof)
-      : true,
+    requiresTransactionProof: isCod 
+      ? false 
+      : methodDoc
+        ? methodDoc.requiresTransactionProof === undefined
+          ? true
+          : Boolean(methodDoc.requiresTransactionProof)
+        : true,
   };
 };
 
