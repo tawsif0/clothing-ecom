@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import axios from "axios";
 import {
   FiCheckCircle,
+  FiChevronDown,
   FiMail,
   FiMapPin,
   FiMessageSquare,
@@ -194,6 +195,62 @@ const Contact = () => {
       href: contactInfo.addressLink,
     },
   ];
+
+  const questionItems = useMemo(
+    () => [
+      {
+        id: 1,
+        question: "What payment methods do you accept?",
+        answer:
+          "We accept the payment methods currently enabled in your checkout flow, including COD-ready setups and any other active payment options from the admin side.",
+        category: "Payment",
+      },
+      {
+        id: 2,
+        question: "How long does shipping take?",
+        answer:
+          "Shipping time depends on delivery area, product setup, and the method selected during checkout. Buyers can also review the policy pages or contact support for the latest guidance.",
+        category: "Shipping",
+      },
+      {
+        id: 3,
+        question: "How do I contact customer support?",
+        answer: `You can contact the ${storeName} support team by email at ${contactInfo.email} or by phone at ${contactInfo.phone1}. These support details are controlled from website settings so the storefront always shows the latest contact information.`,
+        category: "Support",
+      },
+      {
+        id: 4,
+        question: "Can I compare products before buying?",
+        answer:
+          "Yes. The storefront includes a compare feature so buyers can check product differences side by side before placing an order.",
+        category: "Products",
+      },
+    ],
+    [storeName, contactInfo.email, contactInfo.phone1],
+  );
+
+  const questionCategories = useMemo(
+    () => ["All", "Payment", "Shipping", "Support", "Products"],
+    [],
+  );
+  const [activeQuestionCategory, setActiveQuestionCategory] = useState("All");
+  const [openQuestionId, setOpenQuestionId] = useState(
+    questionItems[0]?.id || null,
+  );
+
+  const filteredQuestions = useMemo(
+    () =>
+      questionItems.filter(
+        (item) =>
+          activeQuestionCategory === "All" ||
+          item.category === activeQuestionCategory,
+      ),
+    [questionItems, activeQuestionCategory],
+  );
+
+  const toggleQuestion = (id) => {
+    setOpenQuestionId((current) => (current === id ? null : id));
+  };
 
   const handleChange = (event) => {
     setFormData((current) => ({
@@ -495,6 +552,89 @@ const Contact = () => {
                 </p>
               ) : null}
             </div>
+          </div>
+        </div>
+        <div id="questions" className="scroll-mt-28">
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-black mb-2">
+              Frequently Asked Questions
+            </h2>
+          </div>
+
+          <div className="mb-8 md:mb-10">
+            <div className="flex flex-wrap gap-2 md:gap-3 justify-center">
+              {questionCategories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setActiveQuestionCategory(category)}
+                  className={`px-4 md:px-6 py-2 md:py-3 rounded-full text-sm font-medium transition-all duration-300 ${
+                    activeQuestionCategory === category
+                      ? "app-btn-primary shadow-lg"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {filteredQuestions.map((item) => {
+              const isOpen = item.id === openQuestionId;
+              return (
+                <div
+                  key={item.id}
+                  className={`border border-gray-200 rounded-2xl overflow-hidden transition-all duration-300 ${
+                    isOpen ? "shadow-xl" : "hover:shadow-lg"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleQuestion(item.id)}
+                    className="w-full text-left p-6 md:p-8 bg-white hover:bg-gray-50 transition-colors duration-300 flex items-start justify-between gap-4"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-xs font-semibold px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
+                          {item.category}
+                        </span>
+                      </div>
+                      <h3 className="text-lg md:text-xl font-semibold text-black pr-8">
+                        {item.question}
+                      </h3>
+                      {isOpen ? (
+                        <p className="mt-4 text-gray-600 line-clamp-2">
+                          {item.answer}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div
+                      className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        isOpen ? "bg-black rotate-180" : "bg-gray-100"
+                      }`}
+                    >
+                      <FiChevronDown
+                        className={`text-lg transition-transform duration-300 ${
+                          isOpen ? "text-white" : "text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </button>
+
+                  {isOpen ? (
+                    <div className="px-6 md:px-8 pb-6 md:pb-8 bg-linear-to-b from-gray-50 to-white">
+                      <div className="pl-6 border-l-2 border-black">
+                        <p className="text-gray-700 leading-relaxed">
+                          {item.answer}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -15,15 +15,6 @@ import SearchableSelect from "../components/SearchableSelect";
 import { useAuth } from "../hooks/useAuth";
 import { useThemeColors } from "../hooks/useThemeColors";
 import {
-  ABOUT_CARD_ICON_OPTIONS,
-  DEFAULT_ABOUT_CARDS,
-  DEFAULT_ABOUT_STORY_CONTENT,
-  DEFAULT_ABOUT_STORY_TITLE,
-  createEmptyAboutCard,
-  getAboutCardIconComponent,
-  normalizeAboutCards,
-} from "../utils/aboutSection";
-import {
   resolveWebsiteIconUrl,
   toPublicAssetUrl,
 } from "../utils/publicSettings";
@@ -239,34 +230,6 @@ const ModuleWebsiteSetup = () => {
     dispatch(updateAdminField({ key, value }));
   };
 
-  const aboutCards = useMemo(
-    () => normalizeAboutCards(settings?.about?.cards || DEFAULT_ABOUT_CARDS),
-    [settings?.about?.cards],
-  );
-
-  const updateAboutCards = (nextCards) => {
-    updateNested("about", "cards", normalizeAboutCards(nextCards));
-  };
-
-  const addAboutCard = () => {
-    if (aboutCards.length >= 4) return;
-    updateAboutCards([...aboutCards, createEmptyAboutCard()]);
-  };
-
-  const updateAboutCard = (index, updates) => {
-    updateAboutCards(
-      aboutCards.map((card, currentIndex) =>
-        currentIndex === index ? { ...card, ...updates } : card,
-      ),
-    );
-  };
-
-  const removeAboutCard = (index) => {
-    updateAboutCards(
-      aboutCards.filter((_, currentIndex) => currentIndex !== index),
-    );
-  };
-
   const handleLogoUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -327,17 +290,6 @@ const ModuleWebsiteSetup = () => {
           footerCaption: String(
             settings?.storefront?.footerCaption || "",
           ).trim(),
-        },
-        about: {
-          ...(settings.about || {}),
-          storyTitle:
-            String(settings?.about?.storyTitle || "").trim() ||
-            DEFAULT_ABOUT_STORY_TITLE,
-          storySubtitle: String(settings?.about?.storySubtitle || "").trim(),
-          storyContent:
-            String(settings?.about?.storyContent || "").trim() ||
-            DEFAULT_ABOUT_STORY_CONTENT,
-          cards: aboutCards,
         },
         marketplace: {
           ...(settings?.marketplace || {}),
@@ -869,6 +821,7 @@ const ModuleWebsiteSetup = () => {
             </section>
           </div>
 
+          {/*
           <section className={sectionClass}>
             <h2 className="text-lg font-semibold text-black">About Page</h2>
             <p className="text-sm text-gray-600">
@@ -1182,6 +1135,7 @@ const ModuleWebsiteSetup = () => {
               )}
             </div>
           </section>
+          */}
 
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
             <section className={sectionClass}>
