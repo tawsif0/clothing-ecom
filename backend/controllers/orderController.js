@@ -550,7 +550,7 @@ const resolveCourierApiErrorMessage = (error) => {
       responseData?.message ||
         responseData?.error ||
         responseData?.detail ||
-        "",
+        ""
     ).trim();
 
     if (message) {
@@ -560,6 +560,72 @@ const resolveCourierApiErrorMessage = (error) => {
 
   return String(error?.message || "").trim() || "Courier API request failed";
 };
+
+// Resolve Pathao access token (mirrors axon implementation)
+const resolvePathaoAccessToken = async (courierConfig = {}) => {
+  const apiToken = String(courierConfig.apiToken || "").trim();
+  if (!apiToken) return "";
+
+  if (!apiToken.includes(":")) {
+    return apiToken;
+  }
+
+  const parts = apiToken.split(":");
+  let username = "";
+  let password = "";
+
+  if (parts.length >= 3) {
+    const lastPart = parts[parts.length - 1].trim();
+    if (/^\d+$/.test(lastPart)) {
+      username = parts[0].trim();
+      password = parts.slice(1, -1).join(":").trim();
+    } else {
+      username = parts[0].trim();
+      password = parts.slice(1).join(":").trim();
+    }
+  } else {
+    username = parts[0].trim();
+    password = parts[1].trim();
+  }
+
+  const clientId = String(courierConfig.apiKey || "").trim();
+  const clientSecret = String(courierConfig.apiSecret || "").trim();
+
+  try {
+    const tokenUrl = joinBaseUrlWithPath(
+      courierConfig.apiBaseUrl,
+      "/aladdin/api/v1/issue-token"
+    );
+
+    const response = await axios.post(
+      tokenUrl,
+      {
+        client_id: clientId,
+        client_secret: clientSecret,
+        username,
+        password,
+        grant_type: "password",
+      },
+      {
+        timeout: courierConfig.timeoutMs || 12000,
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+
+    return response.data?.access_token || "";
+  } catch (error) {
+    const apiErrorMsg = resolveCourierApiErrorMessage(error);
+    throw new Error(`Pathao token authentication failed: ${apiErrorMsg}`);
+  }
+};
+
+
+
+
+
 
 const joinBaseUrlWithPath = (baseUrl, path) => {
   const base = String(baseUrl || "")
@@ -771,6 +837,70 @@ const buildCourierConsignmentPayload = (order = {}, courierConfig = {}) => {
       cod_amount: collection.amountToCollect,
       note: String(order?.adminNotes || "").trim(),
       item_description: itemDescription,
+    };
+  }
+
+  if (providerName === "pathao") {
+    const invoice = String(
+      order?.orderNumber || generateFallbackConsignmentId(order),
+    ).trim();
+    const itemDescription = items
+      .map((item) =>
+        String(item?.product?.title || item?.title || "Product").trim(),
+      )
+      .filter(Boolean)
+      .join(", ");
+
+    // Pathao store_id needs to be an integer (e.g. 12345).
+    // We check if the store ID is appended to the API token (email:password:storeId)
+    // or if it is entered in the Label path field as a pure number.
+    let storeId = 0;
+    const apiTokenStr = String(courierConfig.apiToken || "").trim();
+    const tokenParts = apiTokenStr.split(":");
+    if (tokenParts.length >= 3) {
+      const lastPart = tokenParts[tokenParts.length - 1].trim();
+      if (/^\d+$/.test(lastPart)) {
+        storeId = parseInt(lastPart, 10);
+      }
+    }
+
+    if (!storeId) {
+      const labelPathClean = String(courierConfig.labelPath || "").trim();
+      if (/^\d+$/.test(labelPathClean)) {
+        storeId = parseInt(labelPathClean, 10);
+      }
+    }
+
+    const totalQuantity = items.reduce((sum, item) => sum + Number(item?.quantity || 0), 0) || 1;
+
+    // Clean up recipient phone number for Pathao requirements (11 digits, starting with 01)
+    let cleanPhone = String(shipping?.phone || "").replace(/\D/g, "");
+    if (cleanPhone.startsWith("880")) {
+      cleanPhone = cleanPhone.slice(2);
+    }
+    if (!cleanPhone.startsWith("0") && cleanPhone.length === 10) {
+      cleanPhone = "0" + cleanPhone;
+    }
+
+    // Ensure recipient address is detailed (Pathao requires a complete address, min 10 chars)
+    let finalAddress = fullShippingAddress || String(shipping?.address || "").trim();
+    if (finalAddress.length < 10) {
+      finalAddress = `${finalAddress}, ${String(shipping?.city || "").trim()}, ${String(shipping?.district || "Bangladesh").trim()}`;
+    }
+
+    return {
+      store_id: storeId,
+      merchant_order_id: invoice,
+      recipient_name: customerName || "Customer",
+      recipient_phone: cleanPhone,
+      recipient_address: finalAddress,
+      delivery_type: 48, // 48: Normal Delivery (default)
+      item_type: 2, // 2: Parcel (default)
+      special_instruction: String(order?.adminNotes || "").trim(),
+      item_quantity: totalQuantity,
+      item_weight: 0.5, // Standard weight default in kg
+      amount_to_collect: Math.round(collection.amountToCollect || 0),
+      item_description: itemDescription || "E-commerce order items",
     };
   }
 
@@ -2763,6 +2893,24 @@ exports.createOrder = async (req, res) => {
     });
     await order.save();
 
+    // Pathao courier integration (if active)
+    try {
+      const courierConfig = await getPrimaryAdminCourierSettings();
+      if (courierConfig && courierConfig.courierKey === "pathao") {
+        // Resolve token if needed
+        const token = await resolvePathaoAccessToken(courierConfig);
+        if (token) {
+          courierConfig.apiToken = token;
+        }
+        const payload = buildCourierConsignmentPayload(order, courierConfig);
+        // Attach courier meta to order
+        setOrderCourierMeta(order, payload);
+        await order.save(); // persist courier meta
+      }
+    } catch (courierErr) {
+      console.error("Pathao courier integration error:", courierErr);
+    }
+
     let paymentRedirectUrl = "";
     let gatewayInitError = "";
     const isGatewayCheckout =
@@ -4109,10 +4257,41 @@ exports.generateCourierConsignment = async (req, res) => {
       });
     }
 
+    if (courierConfig) {
+      const isPathao =
+        String(courierConfig.courierKey || "").toLowerCase() === "pathao" ||
+        String(courierConfig.providerName || "").toLowerCase() === "pathao";
+
+      if (isPathao && courierConfig.apiToken && courierConfig.apiToken.includes(":")) {
+        try {
+          const dynamicToken = await resolvePathaoAccessToken(courierConfig);
+          if (dynamicToken) {
+            courierConfig.apiToken = dynamicToken;
+          }
+        } catch (authError) {
+          return res.status(401).json({
+            success: false,
+            message: authError.message,
+          });
+        }
+      }
+    }
+
     const currentCourier = getOrderCourierMeta(order);
     const previousStatus = normalizeOrderStatus(order.orderStatus || "pending");
     const cancellationSettings = await getCancellationSettings();
     const payload = buildCourierConsignmentPayload(order, courierConfig);
+
+    const isPathao =
+      String(courierConfig?.courierKey || "").toLowerCase() === "pathao" ||
+      String(courierConfig?.providerName || "").toLowerCase() === "pathao";
+
+    if (isPathao && (!payload.store_id || payload.store_id === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: "Pathao Store ID is missing or invalid. Please replace '/label' in the 'Label path' box with your numeric Store ID, or append it to your API Token as 'email:password:store_id'.",
+      });
+    }
 
     let generatedCourier = null;
 
@@ -4238,6 +4417,26 @@ exports.syncCourierTracking = async (req, res) => {
     const courierConfig = courierSelectionKey
       ? await getCourierSettingsByKey(courierSelectionKey)
       : await getPrimaryAdminCourierSettings();
+
+    if (courierConfig) {
+      const isPathao =
+        String(courierConfig.courierKey || "").toLowerCase() === "pathao" ||
+        String(courierConfig.providerName || "").toLowerCase() === "pathao";
+
+      if (isPathao && courierConfig.apiToken && courierConfig.apiToken.includes(":")) {
+        try {
+          const dynamicToken = await resolvePathaoAccessToken(courierConfig);
+          if (dynamicToken) {
+            courierConfig.apiToken = dynamicToken;
+          }
+        } catch (authError) {
+          return res.status(401).json({
+            success: false,
+            message: authError.message,
+          });
+        }
+      }
+    }
 
     if (!courierConfig || !courierConfig.enabled || !courierConfig.apiBaseUrl) {
       return res.status(400).json({

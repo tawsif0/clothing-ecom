@@ -181,7 +181,7 @@ const renderVariantPricingGroups = (groups = [], productId = "") => {
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-gray-500">
               {group.name}
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col gap-2">
               {visibleOptions.map((option, optionIndex) => {
                 const hasDirectPrice =
                   option.showPrice &&
@@ -234,7 +234,6 @@ const renderVariantPricingGroups = (groups = [], productId = "") => {
                   </div>
                 );
               })}
-
               {remainingOptionCount > 0 ? (
                 <div className="rounded-2xl border border-dashed border-gray-200 px-3 py-2 text-xs font-semibold text-gray-400">
                   +{remainingOptionCount} more
@@ -586,52 +585,27 @@ const CompareProducts = () => {
             </h2>
           </div>
 
-          <div
-            className="hidden gap-3 px-4 lg:grid lg:[grid-template-columns:var(--compare-grid)]"
-            style={{
-              "--compare-grid": `200px repeat(${compareCards.length}, minmax(0, 1fr))`,
-            }}
-          >
-            <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400">
-              Spec / Metric
-            </div>
-            {compareCards.map((item) => (
-              <div
-                key={`header-${item._id}`}
-                className="px-4 text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400"
-              >
-                {String(item?.title || "")
-                  .trim()
-                  .slice(0, 22)}
-              </div>
-            ))}
-          </div>
+
 
           {comparisonRows.map((row, index) => {
             const surfaceClassName =
               index % 2 === 0
                 ? "bg-white shadow-[0_12px_30px_rgba(45,52,53,0.04)]"
-                : "bg-[#f2f4f4]";
+                : "";
 
             return (
-              <div
-                key={row.label}
-                className={`grid grid-cols-1 gap-4 rounded-[24px] p-5 sm:p-6 lg:items-center lg:[grid-template-columns:var(--compare-grid)] ${surfaceClassName}`}
-                style={{
-                  "--compare-grid": `200px repeat(${compareCards.length}, minmax(0, 1fr))`,
-                }}
-              >
-                <div className="px-2 text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+              <div key={row.label} className={`rounded-2xl p-5 ${surfaceClassName}`}>
+                <div className="mb-4 text-[10px] font-bold uppercase tracking-[0.22em] text-gray-400">
                   {row.label}
                 </div>
-                {compareCards.map((item) => (
-                  <div
-                    key={`${row.label}-${item._id}`}
-                    className="rounded-full bg-white/70 px-4 py-3 text-sm font-medium text-[#2d3435] lg:bg-transparent lg:px-4 lg:py-0"
-                  >
-                    {row.value(item)}
-                  </div>
-                ))}
+                <div className="flex flex-col gap-4">
+                  {compareCards.map((item) => (
+                    <div key={`${item._id}-${row.label}`} className="text-sm">
+                      <span className="font-semibold text-gray-700 mr-2">{String(item?.title || "").trim().slice(0, 22)}:</span>
+                      {row.value(item)}
+                    </div>
+                  ))}
+                </div>
               </div>
             );
           })}

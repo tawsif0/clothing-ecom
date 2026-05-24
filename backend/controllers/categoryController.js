@@ -251,6 +251,15 @@ const deleteCategory = async (req, res) => {
       });
     }
 
+    // Prevent deletion if products are associated with this category
+    const productCount = await Product.countDocuments({ category: category._id });
+    if (productCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete category; ${productCount} product(s) are linked to it.`,
+      });
+    }
+
     if (category.imagePublicId) {
       await deleteImage(category.imagePublicId);
     }

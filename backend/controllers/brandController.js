@@ -198,7 +198,10 @@ exports.getBrands = async (req, res) => {
     const scope = await resolveScope(req, res);
     if (!scope) return;
 
-    await seedBrandsFromProducts({ createdByUserId: getUserId(req.user) });
+    const count = await Brand.countDocuments();
+    if (count === 0) {
+      await seedBrandsFromProducts({ createdByUserId: getUserId(req.user) });
+    }
 
     const page = Math.max(1, Number.parseInt(req.query?.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, Number.parseInt(req.query?.limit, 10) || 20));
@@ -338,6 +341,14 @@ exports.deleteBrand = async (req, res) => {
       });
     }
 
+    if (deleted.name) {
+      const productQuery = { brand: deleted.name };
+      if (scope.vendorId) {
+        productQuery.vendor = scope.vendorId;
+      }
+      await Product.updateMany(productQuery, { $set: { brand: "" } });
+    }
+
     res.json({
       success: true,
       message: "Brand deleted",
@@ -353,7 +364,10 @@ exports.deleteBrand = async (req, res) => {
 
 exports.getPublicBrands = async (req, res) => {
   try {
-    await seedBrandsFromProducts();
+    const count = await Brand.countDocuments();
+    if (count === 0) {
+      await seedBrandsFromProducts();
+    }
 
     const requestedVendorId = String(req.query?.vendorId || "").trim();
     const query = {

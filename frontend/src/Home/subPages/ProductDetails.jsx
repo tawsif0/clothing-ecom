@@ -876,6 +876,67 @@ const ProductDetails = () => {
     !hasColorVariantDefinition && Array.isArray(product?.colors)
       ? product.colors
       : [];
+
+  // Auto-select first variant options by default (and first color/variation where applicable).
+  useEffect(() => {
+    if (!product?._id) return;
+
+    setSelectedVariantOptions((prev) => {
+      const next = { ...(prev || {}) };
+      let changed = false;
+
+      productVariantDefinitions.forEach((definition, index) => {
+        if (next[index]) return;
+        const firstOption = Array.isArray(definition?.options)
+          ? definition.options[0]
+          : null;
+        if (!firstOption) return;
+        next[index] = firstOption;
+        changed = true;
+      });
+
+      return changed ? next : prev;
+    });
+
+    // If there is a color definition, keep selectedColor in sync for legacy UI bits.
+    const colorDefinitionIndex = productVariantDefinitions.findIndex(
+      (definition) =>
+        definition?.preset === "color" ||
+        String(definition?.name || "").toLowerCase() === "color",
+    );
+
+    if (colorDefinitionIndex >= 0) {
+      const option = productVariantDefinitions[colorDefinitionIndex]?.options?.[0];
+      const optionColor = String(option?.colorHex || option?.value || "")
+        .trim()
+        .toLowerCase();
+      if (optionColor) {
+        setSelectedColor((current) => (current ? current : optionColor));
+      }
+    } else if (legacyColorOptions.length > 0) {
+      const firstLegacy = String(legacyColorOptions[0] || "")
+        .trim()
+        .toLowerCase();
+      if (firstLegacy) {
+        setSelectedColor((current) => (current ? current : firstLegacy));
+      }
+    }
+
+    if (
+      String(product?.marketplaceType || "").toLowerCase() === "variable" &&
+      Array.isArray(product?.variations) &&
+      product.variations.length > 0
+    ) {
+      const firstActiveVariation =
+        product.variations.find((variation) => variation?.isActive !== false) ||
+        product.variations[0];
+      const firstId = String(firstActiveVariation?._id || "").trim();
+      if (firstId) {
+        setSelectedVariationId((current) => (current ? current : firstId));
+      }
+    }
+  }, [product?._id, product?.marketplaceType, product?.variations, productVariantDefinitions, legacyColorOptions]);
+
   const selectedVariation =
     marketplaceType === "variable"
       ? (product?.variations || []).find(

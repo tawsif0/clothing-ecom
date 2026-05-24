@@ -398,7 +398,7 @@ const ThankYou = () => {
     const items = orderItems
       .map((item) => {
         const product = typeof item.product === "object" ? item.product : null;
-        const price = Number(item.price || product?.price || 0);
+        const price = getOrderItemUnitPrice(item);
 
         return buildDataLayerItem({
           productId: item.productId || product?._id || item.product,

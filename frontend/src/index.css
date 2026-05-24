@@ -717,6 +717,7 @@ a[href]:hover {
 }
 
 .app-panel {
+  background-color: #ffffff;
   border: 1px solid var(--app-border);
   border-radius: var(--app-radius-xl);
   box-shadow: var(--app-shadow-sm);

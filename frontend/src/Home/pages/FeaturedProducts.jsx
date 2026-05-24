@@ -6,7 +6,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { FaShoppingBag, FaShoppingCart } from "react-icons/fa";
 import { FiEye } from "react-icons/fi";
-import { getProductPricingDisplay } from "../../utils/productPricing";
+import { getProductCardPricingDisplay } from "../../utils/productPricing";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 const getCardMetaLine = (product) =>
@@ -419,7 +419,7 @@ const FeaturedProducts = () => {
             <div className={`${getGridClasses(productCount, isExpanded)}`}>
               {displayProducts.map((product, index) => {
                 const isProcessing = processingBuyNow === product.id;
-                const pricing = getProductPricingDisplay(product);
+                const pricing = getProductCardPricingDisplay(product);
                 const cardMetaLine = getCardMetaLine(product);
 
                 return (

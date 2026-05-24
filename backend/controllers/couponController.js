@@ -56,23 +56,10 @@ const normalizeRequiredProducts = (value) => {
   return [...new Set(ids)];
 };
 
-const CATEGORY_TYPE_OPTIONS = [
-  "General",
-  "Popular",
-  "Hot deals",
-  "Best Selling",
-  "Latest",
-];
-
 const normalizeCategoryTypes = (value) => {
   const source = normalizeStringArray(value);
   return source
-    .map((entry) => {
-      const matched = CATEGORY_TYPE_OPTIONS.find(
-        (option) => option.toLowerCase() === entry.toLowerCase(),
-      );
-      return matched || "";
-    })
+    .map((entry) => String(entry || "").trim())
     .filter(Boolean);
 };
 
@@ -388,6 +375,7 @@ exports.createCoupon = async (req, res) => {
       targetCategoryTypes: catalogTargeting.targetCategoryTypes,
       targetCategories: catalogTargeting.targetCategories,
       targetProducts: catalogTargeting.targetProducts,
+      vendor: vendorResolution.vendorId,
       createdBy: req.user.id || req.user._id,
     });
 

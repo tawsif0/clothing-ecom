@@ -12,6 +12,7 @@ import {
   applyMarketingTemplate,
   getActiveMarketingEntry,
 } from "../../utils/marketingProfiles";
+import { getProductCardPricingDisplay } from "../../utils/productPricing";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
@@ -54,15 +55,10 @@ const getFullImageUrl = (imagePath) => {
 };
 
 const getProductPriceLabel = (product) => {
-  const priceType = String(product?.priceType || "single").toLowerCase();
-  const price = Number(product?.price || 0);
-  const salePrice = Number(product?.salePrice || 0);
-
-  if (priceType === "tba") return "TBA";
-  if (priceType === "best" && salePrice > 0 && salePrice < price) {
-    return `${salePrice.toFixed(2)} Tk`;
-  }
-  return `${price.toFixed(2)} Tk`;
+  const pricing = getProductCardPricingDisplay(product);
+  if (pricing?.isTba) return "TBA";
+  const value = Number(pricing?.currentPrice ?? 0);
+  return `${(Number.isFinite(value) ? value : 0).toFixed(2)} Tk`;
 };
 
 const LandingPageView = () => {

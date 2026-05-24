@@ -2896,7 +2896,7 @@ function ProductModify({ initialMode = "list" }) {
                         key={`variant-${definitionIndex}`}
                         className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3"
                       >
-                        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                        <div className="flex flex-col gap-3">
                           <SearchableSelect
                             value={definition.preset}
                             onChange={(value) =>
@@ -2913,7 +2913,7 @@ function ProductModify({ initialMode = "list" }) {
                             placeholder="Preset"
                             searchable={false}
                             className="min-w-0"
-                            buttonClassName="w-full md:w-40 px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm"
+                            buttonClassName="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm"
                             menuClassName="rounded-xl"
                           />
 

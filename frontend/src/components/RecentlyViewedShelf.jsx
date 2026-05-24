@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { FiClock, FiEye } from "react-icons/fi";
-import { getProductPricingDisplay } from "../utils/productPricing";
+import { getProductCardPricingDisplay } from "../utils/productPricing";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
@@ -68,7 +68,7 @@ const RecentlyViewedShelf = ({
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
           {filteredItems.map((item) => {
             const image = getFullImageUrl(item?.images?.[0]);
-            const pricing = getProductPricingDisplay(item);
+            const pricing = getProductCardPricingDisplay(item);
             return (
               <Link
                 key={item._id}

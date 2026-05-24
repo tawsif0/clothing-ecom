@@ -1,3 +1,9 @@
+import {
+  getDefaultSelectedVariants,
+  getProductPricingForSelectedVariants,
+  normalizeSelectedVariantsPayload,
+} from "./productVariants";
+
 export const normalizePriceType = (product) =>
   String(product?.priceType || "single").toLowerCase();
 
@@ -48,3 +54,11 @@ export const getProductPricingDisplay = (product) => {
   };
 };
 
+// For product cards we want a consistent default: first variant option of each
+// variant group (if any), and display the resulting combination price.
+export const getProductCardPricingDisplay = (product) => {
+  const selected = getDefaultSelectedVariants(product);
+  const resolved = normalizeSelectedVariantsPayload(selected);
+  const pricing = getProductPricingForSelectedVariants(product, resolved);
+  return pricing || getProductPricingDisplay(product);
+};

@@ -53,6 +53,57 @@ import StorefrontProductCard from "../components/StorefrontProductCard";
 import { useCart } from "../../context/CartContext";
 const INITIAL_DISPLAY_LIMIT = 20;
 
+const DualRangeSlider = ({ min, max, value, onChange }) => {
+  const [minVal, setMinVal] = useState(value[0]);
+  const [maxVal, setMaxVal] = useState(value[1]);
+
+  useEffect(() => {
+    setMinVal(value[0]);
+    setMaxVal(value[1]);
+  }, [value]);
+
+  const handleMinChange = (e) => {
+    const val = Math.min(Number(e.target.value), maxVal - 1);
+    setMinVal(val);
+    onChange([val, maxVal]);
+  };
+
+  const handleMaxChange = (e) => {
+    const val = Math.max(Number(e.target.value), minVal + 1);
+    setMaxVal(val);
+    onChange([minVal, val]);
+  };
+
+  const percent1 = max > min ? ((minVal - min) / (max - min)) * 100 : 0;
+  const percent2 = max > min ? ((maxVal - min) / (max - min)) * 100 : 100;
+
+  return (
+    <div className="relative w-full h-8 flex items-center group">
+      <div className="absolute w-full h-1.5 bg-gray-200 rounded-full" />
+      <div
+        className="absolute h-1.5 bg-red-600 rounded-full transition-all duration-100 ease-linear"
+        style={{ left: `${percent1}%`, width: `${percent2 - percent1}%` }}
+      />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={minVal}
+        onChange={handleMinChange}
+        className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600 [&::-webkit-slider-thumb]:appearance-none [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-red-600 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:appearance-none z-20"
+      />
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={maxVal}
+        onChange={handleMaxChange}
+        className="absolute w-full h-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600 [&::-webkit-slider-thumb]:appearance-none [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-red-600 [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:appearance-none z-20"
+      />
+    </div>
+  );
+};
+
 const DEFAULT_STOREFRONT = getDefaultPublicSettings().storefront;
 
 const applyTemplate = (value, replacements = {}) => {
@@ -108,8 +159,9 @@ const ProductGrid = () => {
   const [sortBy, setSortBy] = useState("featured");
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [expandedFilters, setExpandedFilters] = useState({
-    categories: true,
     types: true,
+    categories: true,
+    brands: true,
     price: true,
   });
   const { settings, loaded: settingsLoaded } = usePublicSettings();
@@ -1033,6 +1085,53 @@ const ProductGrid = () => {
                 )}
               </div>
 
+              {/* Category Types */}
+              <div className="mb-6 md:mb-8">
+                <button
+                  onClick={() => toggleFilterSection("types")}
+                  className="w-full flex items-center justify-between text-left font-semibold text-black mb-4"
+                >
+                  <span>Category Type</span>
+                  {expandedFilters.types ? <FiChevronUp /> : <FiChevronDown />}
+                </button>
+
+                {expandedFilters.types && (
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setSelectedCategoryType("all")}
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                        selectedCategoryType === "all"
+                          ? "bg-primary text-on-primary"
+                          : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
+                      }`}
+                    >
+                      All Types
+                    </button>
+                    {visibleCategoryTypes.length > 0 ? (
+                      visibleCategoryTypes.map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => setSelectedCategoryType(type)}
+                          className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                            selectedCategoryType === type
+                              ? "bg-primary text-on-primary"
+                              : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="text-sm text-gray-500 italic px-3 py-2">
+                        {visibleCategories.length > 0
+                          ? "No category types defined"
+                          : "Loading categories..."}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Categories */}
               <div className="mb-6 md:mb-8">
                 <button
@@ -1087,49 +1186,47 @@ const ProductGrid = () => {
                 )}
               </div>
 
-              {/* Category Types */}
+              {/* Brands */}
               <div className="mb-6 md:mb-8">
                 <button
-                  onClick={() => toggleFilterSection("types")}
+                  onClick={() => toggleFilterSection("brands")}
                   className="w-full flex items-center justify-between text-left font-semibold text-black mb-4"
                 >
-                  <span>Category Type</span>
-                  {expandedFilters.types ? <FiChevronUp /> : <FiChevronDown />}
+                  <span>Brands</span>
+                  {expandedFilters.brands ? <FiChevronUp /> : <FiChevronDown />}
                 </button>
 
-                {expandedFilters.types && (
-                  <div className="space-y-2">
+                {expandedFilters.brands && (
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                     <button
-                      onClick={() => setSelectedCategoryType("all")}
+                      onClick={() => {
+                        setSelectedBrand("");
+                        navigate("/shop");
+                      }}
                       className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                        selectedCategoryType === "all"
+                        !selectedBrand
                           ? "bg-primary text-on-primary"
                           : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
                       }`}
                     >
-                      All Types
+                      All Brands
                     </button>
-                    {visibleCategoryTypes.length > 0 ? (
-                      visibleCategoryTypes.map((type) => (
-                        <button
-                          key={type}
-                          onClick={() => setSelectedCategoryType(type)}
-                          className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                            selectedCategoryType === type
-                              ? "bg-primary text-on-primary"
-                              : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
-                          }`}
-                        >
-                          {type}
-                        </button>
-                      ))
-                    ) : (
-                      <div className="text-sm text-gray-500 italic px-3 py-2">
-                        {visibleCategories.length > 0
-                          ? "No category types defined"
-                          : "Loading categories..."}
-                      </div>
-                    )}
+                    {catalogBrands.map((brand) => (
+                      <button
+                        key={brand._id}
+                        onClick={() => {
+                          setSelectedBrand(brand.name);
+                          navigate(`/shop?brand=${encodeURIComponent(brand.name)}`);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                          selectedBrand === brand.name
+                            ? "bg-primary text-on-primary"
+                            : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
+                        }`}
+                      >
+                        {brand.name}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
@@ -1145,26 +1242,18 @@ const ProductGrid = () => {
                 </button>
 
                 {expandedFilters.price && (
-                  <div className="space-y-4">
-                    <div className="hidden items-center justify-between text-sm text-on-surface-variant">
-                      <span>{priceRange[0].toFixed(2)} Tk</span>
-                      <span>{priceRange[1].toFixed(2)} Tk</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
+                  <div className="space-y-4 pt-2">
+                    <DualRangeSlider
+                      min={0}
                       max={
                         Math.max(
                           ...products.map((p) => getProductDisplayPrice(p)),
                         ) || 10000
                       }
-                      value={priceRange[1]}
-                      onChange={(e) =>
-                        setPriceRange([priceRange[0], parseInt(e.target.value)])
-                      }
-                      className="w-full h-2 bg-surface-dim rounded-lg appearance-none cursor-pointer accent-primary"
+                      value={priceRange}
+                      onChange={setPriceRange}
                     />
-                    <div className="flex items-center justify-between text-sm font-label-md text-primary">
+                    <div className="flex items-center justify-between text-sm font-label-md text-primary mt-4">
                       <span>{priceRange[0].toFixed(2)} Tk</span>
                       <span>{priceRange[1].toFixed(2)} Tk</span>
                     </div>
@@ -1685,48 +1774,7 @@ const ProductGrid = () => {
 
               {/* Mobile filter content */}
               <div className="space-y-6">
-                <div>
-                  <h4 className="font-semibold text-black mb-3">Categories</h4>
-                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                    <button
-                      onClick={() => {
-                        setSelectedCategory("all");
-                        navigate("/shop");
-                        setShowMobileFilters(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                        selectedCategory === "all"
-                          ? "bg-primary text-on-primary"
-                          : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
-                      }`}
-                    >
-                      All Categories
-                    </button>
-                    {visibleCategories.map((category) => (
-                      <button
-                        key={category._id}
-                        onClick={() => {
-                          setSelectedCategory(category._id);
-                          navigate(`/shop?category=${category._id}`);
-                          setShowMobileFilters(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between ${
-                          selectedCategory === category._id
-                            ? "bg-primary text-on-primary"
-                            : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
-                        }`}
-                      >
-                        <span>{category.name}</span>
-                        {category.type && (
-                          <span className={`text-xs px-2 py-1 rounded ${selectedCategory === category._id ? "bg-white/20 text-white" : "bg-surface-dim text-on-surface-variant"}`}>
-                            {category.type}
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
+                {/* Category Types in Mobile */}
                 <div>
                   <h4 className="font-semibold text-black mb-3">
                     Category Type
@@ -1772,29 +1820,102 @@ const ProductGrid = () => {
                   </div>
                 </div>
 
+                {/* Categories in Mobile */}
+                <div>
+                  <h4 className="font-semibold text-black mb-3">Categories</h4>
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    <button
+                      onClick={() => {
+                        setSelectedCategory("all");
+                        navigate("/shop");
+                        setShowMobileFilters(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                        selectedCategory === "all"
+                          ? "bg-primary text-on-primary"
+                          : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
+                      }`}
+                    >
+                      All Categories
+                    </button>
+                    {visibleCategories.map((category) => (
+                      <button
+                        key={category._id}
+                        onClick={() => {
+                          setSelectedCategory(category._id);
+                          navigate(`/shop?category=${category._id}`);
+                          setShowMobileFilters(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between ${
+                          selectedCategory === category._id
+                            ? "bg-primary text-on-primary"
+                            : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
+                        }`}
+                      >
+                        <span>{category.name}</span>
+                        {category.type && (
+                          <span className={`text-xs px-2 py-1 rounded ${selectedCategory === category._id ? "bg-white/20 text-white" : "bg-surface-dim text-on-surface-variant"}`}>
+                            {category.type}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Brands in Mobile */}
+                <div>
+                  <h4 className="font-semibold text-black mb-3">Brands</h4>
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    <button
+                      onClick={() => {
+                        setSelectedBrand("");
+                        navigate("/shop");
+                        setShowMobileFilters(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                        !selectedBrand
+                          ? "bg-primary text-on-primary"
+                          : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
+                      }`}
+                    >
+                      All Brands
+                    </button>
+                    {catalogBrands.map((brand) => (
+                      <button
+                        key={brand._id}
+                        onClick={() => {
+                          setSelectedBrand(brand.name);
+                          navigate(`/shop?brand=${encodeURIComponent(brand.name)}`);
+                          setShowMobileFilters(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                          selectedBrand === brand.name
+                            ? "bg-primary text-on-primary"
+                            : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
+                        }`}
+                      >
+                        {brand.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Price Range in Mobile */}
                 <div>
                   <h4 className="font-semibold text-black mb-3">Price Range</h4>
-                  <div className="space-y-4">
-                    <div className="hidden items-center justify-between text-sm text-on-surface-variant">
-                      <span>{priceRange[0].toFixed(2)} Tk</span>
-                      <span>{priceRange[1].toFixed(2)} Tk</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
+                  <div className="space-y-4 pt-2">
+                    <DualRangeSlider
+                      min={0}
                       max={
                         Math.max(
                           ...products.map((p) => getProductDisplayPrice(p)),
                         ) || 10000
                       }
-                      value={priceRange[1]}
-                      onChange={(e) =>
-                        setPriceRange([priceRange[0], parseInt(e.target.value)])
-                      }
-                      className="w-full h-2 bg-surface-dim rounded-lg appearance-none cursor-pointer accent-primary"
+                      value={priceRange}
+                      onChange={setPriceRange}
                     />
-                    <div className="flex items-center justify-between text-sm font-label-md text-primary">
+                    <div className="flex items-center justify-between text-sm font-label-md text-primary mt-4">
                       <span>{priceRange[0].toFixed(2)} Tk</span>
                       <span>{priceRange[1].toFixed(2)} Tk</span>
                     </div>
