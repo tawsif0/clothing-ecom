@@ -1,7 +1,30 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { FiHeart } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
+import { selectWishlistPendingIds, toggleWishlistItem } from '../../store/wishlistSlice';
 
 const HotDeals = ({ products = [] }) => {
+  const dispatch = useDispatch();
+  const wishlistItems = useSelector((state) => state.wishlist.items || []);
+  const wishlistPendingIds = useSelector(selectWishlistPendingIds);
+
+  const handleToggleWishlist = async (event, product) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const wishlistLoading = wishlistPendingIds.includes(String(product?._id || product?.id || ""));
+    if (wishlistLoading) return;
+    try {
+      await dispatch(toggleWishlistItem(product)).unwrap();
+      const isWishlisted = wishlistItems.some((item) => String(item?._id || item?.id || "") === String(product?._id || product?.id || ""));
+      toast.success(
+        isWishlisted ? "Removed from wishlist" : "Added to wishlist"
+      );
+    } catch (error) {
+      toast.error(error || "Failed to update wishlist");
+    }
+  };
   const fallbackProducts = [
     {
       _id: 'hd1',
@@ -71,36 +94,57 @@ const HotDeals = ({ products = [] }) => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {displayProducts.map((product) => (
-            <div key={product._id} className="group bg-white rounded-xl shadow-lg p-4 md:p-6 flex flex-col sm:flex-row gap-4 md:gap-6 text-left items-center border border-primary/5">
-              <Link to={`/product/${product._id}`} className="w-full sm:w-1/3 aspect-square sm:aspect-square bg-surface-container rounded-lg relative overflow-hidden block">
-                <img className="w-full h-full object-cover" src={product.images?.[0] || product.image || product.mainImage?.url || "https://placehold.co/400x400?text=No+Image"} alt={product.title || product.name} />
-                {(product.discount || product.discountPercentage) && (
-                  <span className="absolute top-2 left-2 bg-error text-white text-[8px] px-2 py-1 rounded font-bold uppercase">
-                    -{product.discount || product.discountPercentage}%
-                  </span>
-                )}
-              </Link>
-              <div className="flex-grow">
-                <span className="text-error font-bold text-[10px] uppercase tracking-widest mb-1 block">Hot Deal</span>
-                <Link to={`/product/${product._id}`}>
-                  <h3 className="font-headline-md text-black mb-1 text-xl">{product.title || product.name}</h3>
-                </Link>
-                <p className="text-black font-bold text-xl mb-4">
-                  ${product.price || product.basePrice}
-                  {(product.originalPrice || product.comparePrice) && (
-                    <span className="text-on-surface-variant text-sm line-through font-normal ml-2">${product.originalPrice || product.comparePrice}</span>
+          {displayProducts.map((product) => {
+            const productId = String(product?._id || product?.id || "");
+            const isWishlisted = wishlistItems.some((item) => String(item?._id || item?.id || "") === productId);
+            const wishlistLoading = wishlistPendingIds.includes(productId);
+
+            return (
+              <div key={productId} className="group bg-white rounded-xl shadow-lg p-4 md:p-6 flex flex-col sm:flex-row gap-4 md:gap-6 text-left items-start sm:items-center border border-primary/5">
+                <Link to={`/product/${productId}`} className="w-full sm:w-1/3 aspect-square sm:aspect-square bg-surface-container rounded-lg relative overflow-hidden block">
+                  <img className="w-full h-full object-cover" src={product.images?.[0] || product.image || product.mainImage?.url || "https://placehold.co/400x400?text=No+Image"} alt={product.title || product.name} />
+                  {(product.discount || product.discountPercentage) && (
+                    <span className="absolute top-2 left-2 bg-error text-white text-[8px] px-2 py-1 rounded font-bold uppercase">
+                      -{product.discount || product.discountPercentage}%
+                    </span>
                   )}
-                </p>
-                <div className="flex gap-2">
-                  <button className="bg-primary text-white px-4 py-2 rounded text-xs font-label-md">GRAB DEAL</button>
-                  <button className="p-2 border border-outline-variant rounded flex items-center justify-center">
-                    <span className="material-symbols-outlined text-sm">favorite</span>
-                  </button>
+                </Link>
+                <div className="flex-grow w-full">
+                  <span className="text-error font-bold text-[10px] uppercase tracking-widest mb-1 block">Hot Deal</span>
+                  <Link to={`/product/${productId}`}>
+                    <h3 className="font-headline-md text-black mb-1 text-xl">{product.title || product.name}</h3>
+                  </Link>
+                  <p className="text-black font-bold text-xl mb-4">
+                    Tk {product.price || product.basePrice}
+                    {(product.originalPrice || product.comparePrice) && (
+                      <span className="text-on-surface-variant text-sm line-through font-normal ml-2">Tk {product.originalPrice || product.comparePrice}</span>
+                    )}
+                  </p>
+                  <div className="flex gap-2">
+                    <Link 
+                      to={`/product/${productId}`} 
+                      className="bg-primary text-white px-4 py-2 rounded text-xs font-label-md hover:bg-primary/95 transition-colors inline-block text-center"
+                    >
+                      GRAB DEAL
+                    </Link>
+                    <button 
+                      type="button"
+                      onClick={(e) => handleToggleWishlist(e, product)}
+                      disabled={wishlistLoading}
+                      className={`p-2 border rounded flex items-center justify-center transition-colors ${
+                        isWishlisted 
+                          ? 'border-red-500 bg-red-50 text-red-600' 
+                          : 'border-outline-variant bg-white text-black hover:border-red-500 hover:text-red-500'
+                      } disabled:cursor-not-allowed disabled:opacity-60`}
+                      title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                    >
+                      <FiHeart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -1,7 +1,14 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
+import { selectWishlistPendingIds, toggleWishlistItem } from '../../store/wishlistSlice';
 
 const FeaturedProducts = ({ products = [] }) => {
+  const dispatch = useDispatch();
+  const wishlistItems = useSelector((state) => state.wishlist.items || []);
+  const wishlistPendingIds = useSelector(selectWishlistPendingIds);
+
   const fallbackProducts = [
     {
       _id: '1',
@@ -55,6 +62,25 @@ const FeaturedProducts = ({ products = [] }) => {
     return source.filter(p => p.category?.name === activeTab).slice(0, 3);
   }, [products, activeTab]);
 
+  const handleToggleWishlist = async (e, product) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const productId = String(product?._id || product?.id || "").trim();
+    if (wishlistPendingIds.includes(productId)) return;
+    const isWishlisted = wishlistItems.some((item) => String(item?._id || "") === productId);
+    try {
+      await dispatch(toggleWishlistItem(product)).unwrap();
+      toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist");
+    } catch (error) {
+      toast.error(error || "Failed to update wishlist");
+    }
+  };
+
+  const isProductWishlisted = (product) => {
+    const productId = String(product?._id || product?.id || "").trim();
+    return wishlistItems.some((item) => String(item?._id || "") === productId);
+  };
+
   return (
     <section className="py-24 px-margin-mobile md:px-margin-desktop max-w-container-max-width mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
@@ -85,7 +111,7 @@ const FeaturedProducts = ({ products = [] }) => {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {displayProducts.map((product) => (
-          <div key={product._id} className="group bg-white rounded-lg shadow-sm overflow-hidden p-4">
+          <div key={product._id} className="group bg-white rounded-lg shadow-sm overflow-hidden p-4 relative flex flex-col h-full border border-gray-100">
             <Link to={`/product/${product._id}`} className="block relative aspect-[4/5] bg-surface-container rounded-lg overflow-hidden mb-4">
               <img 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
@@ -97,26 +123,32 @@ const FeaturedProducts = ({ products = [] }) => {
                 {product.discount > 0 && <span className="bg-primary text-white text-[10px] px-2 py-1 rounded">-{product.discount}%</span>}
               </div>
               <button 
-                onClick={(e) => { e.preventDefault(); /* add to wishlist */ }} 
-                className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center text-primary shadow-sm"
+                onClick={(e) => handleToggleWishlist(e, product)} 
+                className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm text-primary transition-all hover:scale-110 active:scale-95 z-20"
+                style={{
+                  color: isProductWishlisted(product) ? "#ef4444" : "#94a3b8"
+                }}
               >
-                <span className="material-symbols-outlined text-sm">favorite</span>
+                <span 
+                  className="material-symbols-outlined text-sm font-bold"
+                  style={{
+                    fontVariationSettings: isProductWishlisted(product) ? "'FILL' 1" : "'FILL' 0"
+                  }}
+                >
+                  favorite
+                </span>
               </button>
             </Link>
-            <Link to={`/product/${product._id}`}>
-              <h3 className="font-label-md text-black font-bold mb-1">{product.title || product.name}</h3>
-            </Link>
-            <p className="text-black font-headline-md">
-              ${product.price || product.basePrice}
-              {(product.originalPrice || product.comparePrice) && (
-                <span className="text-on-surface-variant text-sm line-through ml-2">${product.originalPrice || product.comparePrice}</span>
-              )}
-            </p>
-            <div className="mt-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button className="flex-grow bg-primary text-white py-2 rounded-lg text-sm font-label-md">Add to Bag</button>
-              <Link to={`/product/${product._id}`} className="p-2 border border-outline-variant rounded-lg flex items-center justify-center">
-                <span className="material-symbols-outlined text-sm">visibility</span>
+            <div className="flex flex-col flex-grow">
+              <Link to={`/product/${product._id}`}>
+                <h3 className="font-label-md text-black font-bold mb-1 hover:text-primary transition-colors">{product.title || product.name}</h3>
               </Link>
+              <p className="text-black font-headline-md mt-auto">
+                Tk {product.price || product.basePrice}
+                {(product.originalPrice || product.comparePrice) && (
+                  <span className="text-on-surface-variant text-sm line-through ml-2">Tk {product.originalPrice || product.comparePrice}</span>
+                )}
+              </p>
             </div>
           </div>
         ))}

@@ -20,10 +20,6 @@ const BrandStory = () => {
           <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 leading-relaxed">
             {description}
           </p>
-          <a className="group flex items-center gap-2 text-primary font-label-md text-label-md uppercase tracking-widest border-b border-primary w-fit pb-1 hover:text-secondary hover:border-secondary transition-all" href={buttonLink}>
-            {buttonText}
-            <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
-          </a>
         </div>
         <div className="order-1 md:order-2 relative">
           <div className="aspect-[4/5] bg-surface rounded-lg overflow-hidden shadow-2xl">

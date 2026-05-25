@@ -42,7 +42,11 @@ const LogoThemeProvider = ({ children }) => {
         root.style.setProperty("--color-bg", background);
         // Map to existing brand/theme CSS variables for consistency
         root.style.setProperty("--brand-theme-color", primary);
-        root.style.setProperty("--brand-button-text-color", secondary);
+        const configBtnTextColor =
+          /^#[0-9a-f]{3,6}$/i.test(String(settings?.website?.buttonTextColor || "").trim())
+            ? String(settings?.website?.buttonTextColor).trim()
+            : "#ffffff";
+        root.style.setProperty("--brand-button-text-color", configBtnTextColor);
         root.style.setProperty("--brand-theme-shadow", `rgba(${parseInt(primary.slice(1,3),16)}, ${parseInt(primary.slice(3,5),16)}, ${parseInt(primary.slice(5,7),16)}, 0.24)`);
         root.style.setProperty("--app-surface", background);
         setTheme({ primary, secondary, accent, background });

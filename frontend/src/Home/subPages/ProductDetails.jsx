@@ -30,6 +30,7 @@ import axios from "axios";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../hooks/useAuth";
 import usePublicSettings from "../../hooks/usePublicSettings";
+import useThemeColors from "../../hooks/useThemeColors";
 import StorefrontProductCard from "../components/StorefrontProductCard";
 import ProductReviewsPanel from "../components/ProductReviewsPanel";
 import {
@@ -271,6 +272,7 @@ const ProductDetails = () => {
   const { addToCart, isLoading: cartLoading } = useCart();
   const { user } = useAuth();
   const { settings, loaded: settingsLoaded } = usePublicSettings();
+  const { themeColor, buttonTextColor } = useThemeColors();
   const dispatch = useDispatch();
   const compareItems = useSelector((state) => state.compare.items || []);
   const wishlistItems = useSelector((state) => state.wishlist.items || []);
@@ -2599,6 +2601,15 @@ const ProductDetails = () => {
                                               ? "app-btn-primary"
                                               : "border-black/10 bg-white text-black hover:border-black"
                                           }`}
+                                          style={
+                                            isSelected
+                                              ? {
+                                                  backgroundColor: themeColor,
+                                                  borderColor: themeColor,
+                                                  color: buttonTextColor,
+                                                }
+                                              : {}
+                                          }
                                         >
                                           {optionValue}
                                         </button>
@@ -2768,6 +2779,11 @@ const ProductDetails = () => {
                         type="submit"
                         disabled={purchaseActionDisabled}
                         className="app-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-6 py-5 text-sm font-bold uppercase tracking-[0.18em] transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                        style={{
+                          backgroundColor: themeColor,
+                          borderColor: themeColor,
+                          color: buttonTextColor,
+                        }}
                       >
                         <FaShoppingCart className="h-4 w-4" />
                         {loading || cartLoading ? "Adding..." : "Add to Cart"}
@@ -3534,6 +3550,11 @@ const ProductDetails = () => {
                                     type="submit"
                                     disabled={reviewSubmitting}
                                     className="app-btn-primary px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
+                                    style={{
+                                      backgroundColor: themeColor,
+                                      borderColor: themeColor,
+                                      color: buttonTextColor,
+                                    }}
                                   >
                                     {reviewSubmitting
                                       ? myReview

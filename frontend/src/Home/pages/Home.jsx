@@ -154,40 +154,6 @@ const Home = () => {
       <HotDeals products={sectionProducts["Hot deals"]} />
       <BrandStory />
       <LatestProductsOffset products={sectionProducts.Latest} />
-      
-      {/* Trust Indicators Footer Top */}
-      <section className="py-12 bg-white border-t border-surface-container">
-        <div className="max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-primary text-2xl">local_shipping</span>
-            <div>
-              <p className="font-bold text-sm">Fast Shipping</p>
-              <p className="text-xs text-on-surface-variant">Smooth delivery flow</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-primary text-2xl">undo</span>
-            <div>
-              <p className="font-bold text-sm">Easy Returns</p>
-              <p className="text-xs text-on-surface-variant">Simple return support</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-primary text-2xl">sell</span>
-            <div>
-              <p className="font-bold text-sm">Offers And Discounts</p>
-              <p className="text-xs text-on-surface-variant">Fresh deals for shoppers</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-primary text-2xl">headset_mic</span>
-            <div>
-              <p className="font-bold text-sm">Customer Support</p>
-              <p className="text-xs text-on-surface-variant">Help when you need it</p>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };

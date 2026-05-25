@@ -807,9 +807,9 @@ a[href]:hover {
 }
 
 .app-btn-primary {
-  background: var(--brand-theme-color);
-  border: 1px solid var(--brand-theme-color);
-  color: var(--brand-button-text-color);
+  background: var(--brand-theme-color) !important;
+  border: 1px solid var(--brand-theme-color) !important;
+  color: var(--brand-button-text-color) !important;
 }
 
 button.bg-black.text-white,

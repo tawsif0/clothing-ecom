@@ -374,7 +374,8 @@ const Contact = () => {
                   <button
                     type="button"
                     onClick={() => setIsSubmitted(false)}
-                    className="app-btn-primary rounded-full px-6 py-3 font-medium transition-colors hover:scale-105"
+                    className="rounded-full px-6 py-3 font-medium transition-colors hover:scale-105"
+                    style={{ backgroundColor: themeColor, color: buttonTextColor }}
                   >
                     Send Another Message
                   </button>
@@ -470,11 +471,12 @@ const Contact = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="app-btn-primary flex w-full items-center justify-center gap-3 rounded-xl py-4 font-semibold transition-all duration-300 hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-70"
+                    className="flex w-full items-center justify-center gap-3 rounded-xl py-4 font-semibold transition-all duration-300 hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-70"
+                    style={{ backgroundColor: themeColor, color: buttonTextColor }}
                   >
                     {isSubmitting ? (
                       <>
-                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" style={{ borderColor: buttonTextColor, borderTopColor: "transparent" }} />
                         Sending...
                       </>
                     ) : (
@@ -570,9 +572,14 @@ const Contact = () => {
                   onClick={() => setActiveQuestionCategory(category)}
                   className={`px-4 md:px-6 py-2 md:py-3 rounded-full text-sm font-medium transition-all duration-300 ${
                     activeQuestionCategory === category
-                      ? "app-btn-primary shadow-lg"
+                      ? "shadow-lg"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
+                  style={
+                    activeQuestionCategory === category
+                      ? { backgroundColor: themeColor, color: buttonTextColor }
+                      : undefined
+                  }
                 >
                   {category}
                 </button>
@@ -611,15 +618,14 @@ const Contact = () => {
                       ) : null}
                     </div>
                     <div
-                      className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        isOpen ? "bg-black rotate-180" : "bg-gray-100"
-                      }`}
+                      className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
+                      style={{
+                        backgroundColor: isOpen ? themeColor : "#f3f4f6",
+                        color: isOpen ? buttonTextColor : "#4b5563",
+                        transform: isOpen ? "rotate(180deg)" : "rotate(0deg)"
+                      }}
                     >
-                      <FiChevronDown
-                        className={`text-lg transition-transform duration-300 ${
-                          isOpen ? "text-white" : "text-gray-600"
-                        }`}
-                      />
+                      <FiChevronDown className="text-lg" />
                     </div>
                   </button>
 

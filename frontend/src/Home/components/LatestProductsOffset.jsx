@@ -1,11 +1,34 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { FiHeart } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
+import { selectWishlistPendingIds, toggleWishlistItem } from '../../store/wishlistSlice';
 import { getProductPricingDisplay } from "../../utils/productPricing";
 import usePublicSettings from "../../hooks/usePublicSettings";
 import { getPublicStockBadgeText, isPublicStockVisible } from "../../utils/publicProduct";
 
 const LatestProductsOffset = ({ products = [] }) => {
   const { settings } = usePublicSettings();
+  const dispatch = useDispatch();
+  const wishlistItems = useSelector((state) => state.wishlist.items || []);
+  const wishlistPendingIds = useSelector(selectWishlistPendingIds);
+
+  const handleToggleWishlist = async (event, product) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const wishlistLoading = wishlistPendingIds.includes(String(product?._id || product?.id || ""));
+    if (wishlistLoading) return;
+    try {
+      await dispatch(toggleWishlistItem(product)).unwrap();
+      const isWishlisted = wishlistItems.some((item) => String(item?._id || item?.id || "") === String(product?._id || product?.id || ""));
+      toast.success(
+        isWishlisted ? "Removed from wishlist" : "Added to wishlist"
+      );
+    } catch (error) {
+      toast.error(error || "Failed to update wishlist");
+    }
+  };
   const fallbackProducts = [
     {
       _id: 'lp1',
@@ -47,11 +70,14 @@ const LatestProductsOffset = ({ products = [] }) => {
   const renderProductCard = (product, index) => {
     const stockBadgeText = getPublicStockBadgeText(product, null, settings);
     const showStockBadge = Boolean(stockBadgeText) && isPublicStockVisible(product, settings);
+    const productId = String(product?._id || product?.id || "");
+    const isWishlisted = wishlistItems.some((item) => String(item?._id || item?.id || "") === productId);
+    const wishlistLoading = wishlistPendingIds.includes(productId);
     
     return (
-      <div key={product._id} className={`relative group ${index % 2 === 0 ? 'mt-0 md:mt-24' : ''}`}>
+      <div key={productId} className={`relative group ${index % 2 === 0 ? 'mt-0 md:mt-24' : ''}`}>
         <div className="relative aspect-square bg-surface-container rounded shadow-xl overflow-hidden">
-          <Link to={`/product/${product._id}`}>
+          <Link to={`/product/${productId}`}>
             <img 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
               src={product.images?.[0] || product.image || product.mainImage?.url || "https://placehold.co/600x600?text=No+Image"} 
@@ -65,19 +91,30 @@ const LatestProductsOffset = ({ products = [] }) => {
           )}
           <span className="absolute top-6 left-6 bg-white text-primary text-[10px] font-bold px-3 py-1 uppercase rounded-full">New</span>
           <div className="absolute bottom-6 right-6 flex flex-col gap-2 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all">
-            <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary shadow-lg"><span className="material-symbols-outlined text-sm">shopping_bag</span></button>
-            <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary shadow-lg"><span className="material-symbols-outlined text-sm">favorite</span></button>
-            <Link to={`/product/${product._id}`} className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary shadow-lg">
+            <button 
+              type="button"
+              onClick={(e) => handleToggleWishlist(e, product)}
+              disabled={wishlistLoading}
+              className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-colors ${
+                isWishlisted 
+                  ? 'bg-red-50 text-red-600 border border-red-500/20' 
+                  : 'bg-white text-primary hover:text-red-500'
+              } disabled:opacity-60 disabled:cursor-not-allowed`}
+              title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              <FiHeart className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`} />
+            </button>
+            <Link to={`/product/${productId}`} className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary shadow-lg hover:text-secondary transition-colors">
               <span className="material-symbols-outlined text-sm">open_in_full</span>
             </Link>
           </div>
         </div>
         <div className="mt-8 text-center md:text-left">
           <p className="font-label-sm text-secondary uppercase tracking-widest mb-2">Fresh Arrival</p>
-          <Link to={`/product/${product._id}`}>
+          <Link to={`/product/${productId}`}>
             <h3 className="font-headline-md text-black mb-2 text-2xl">{product.title || product.name}</h3>
           </Link>
-          <p className="font-bold text-black">${product.price || product.basePrice}</p>
+          <p className="font-bold text-black">Tk {product.price || product.basePrice}</p>
         </div>
       </div>
     );

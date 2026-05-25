@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
@@ -111,95 +112,119 @@ const NewHeroSection = () => {
     );
   }
 
+  const currentSlide = slides[activeIndex];
+
   return (
     <section className="relative h-[80vh] w-full overflow-hidden flex items-center bg-zinc-900">
       {/* Render slides */}
-      {slides.map((slide, index) => {
-        const isActive = index === activeIndex;
-        return (
-          <div
-            key={slide._id || index}
-            className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-              isActive ? "opacity-100 scale-100 z-10" : "opacity-0 scale-105 z-0 pointer-events-none"
-            }`}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.0 }}
+          className="absolute inset-0 z-10"
+        >
+          {/* Background Image with Auto Zoom Panning */}
+          <motion.div
+            key={`hero-pan-${activeIndex}`}
+            initial={{ scale: 1.12 }}
+            animate={{
+              scale: [1.12, 1.04, 1.12],
+            }}
+            transition={{
+              duration: 7,
+              ease: "easeInOut",
+              repeat: Infinity,
+              repeatType: "mirror",
+            }}
+            className="absolute inset-0 animate-zoom-in"
           >
-            {/* Background Image */}
             <img
-              alt={slide.title}
-              className="absolute inset-0 w-full h-full object-cover object-center"
-              src={slide.imageUrl}
+              alt={currentSlide.title}
+              className="w-full h-full object-cover object-center"
+              src={currentSlide.imageUrl}
             />
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 hero-gradient"></div>
+          </motion.div>
+          
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 hero-gradient z-10"></div>
 
-            {/* Content Container */}
-            <div className="relative z-20 px-margin-mobile md:px-margin-desktop max-w-container-max-width mx-auto w-full h-full flex items-center">
-              <div className="max-w-2xl text-left">
-                <p className="font-label-md text-label-md text-white mb-4 uppercase tracking-[0.2em] transition-transform duration-700 delay-100 translate-y-0">
-                  {slide.kicker}
-                </p>
-                <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-8 leading-tight transition-transform duration-700 delay-200 translate-y-0">
-                  {slide.title}
-                </h1>
-                {slide.description && (
-                  <div
-                    className="text-white font-body-md text-sm md:text-base max-w-lg mb-8 leading-relaxed transition-transform duration-700 delay-300 translate-y-0"
-                    dangerouslySetInnerHTML={{ __html: slide.description }}
-                  />
-                )}
-                {slide.buttonLabel && (
-                  <a
-                    className="inline-block bg-primary text-on-primary font-label-md text-label-md px-10 py-5 rounded-lg border border-secondary transition-all duration-300 shadow-lg shadow-primary/10 transition-transform duration-700 delay-400 translate-y-0"
-                    href={slide.buttonLink || "#"}
-                  >
-                    {slide.buttonLabel}
-                  </a>
-                )}
-              </div>
-            </div>
+          {/* Content Container */}
+          <div className="relative z-20 px-margin-mobile md:px-margin-desktop max-w-container-max-width mx-auto w-full h-full flex items-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="max-w-2xl text-left"
+            >
+              <p className="font-label-md text-label-md text-white mb-4 uppercase tracking-[0.2em]">
+                {currentSlide.kicker}
+              </p>
+              <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-white mb-8 leading-tight">
+                {currentSlide.title}
+              </h1>
+              {currentSlide.description && (
+                <div
+                  className="text-white font-body-md text-sm md:text-base max-w-lg mb-8 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: currentSlide.description }}
+                />
+              )}
+              {currentSlide.buttonLabel && (
+                <a
+                  className="inline-block bg-primary text-on-primary font-label-md text-label-md px-10 py-5 rounded-lg border border-secondary transition-all duration-300 shadow-lg shadow-primary/10"
+                  href={currentSlide.buttonLink || "#"}
+                >
+                  {currentSlide.buttonLabel}
+                </a>
+              )}
+            </motion.div>
           </div>
-        );
-      })}
+        </motion.div>
+      </AnimatePresence>
 
-      {/* Slide Navigation Buttons */}
+      {/* Slide Navigation Buttons & Dots in Red Circle Area */}
       {slides.length > 1 && (
-        <>
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 bg-zinc-950/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 pointer-events-auto">
           {/* Left Arrow */}
           <button
+            type="button"
             onClick={prevSlide}
-            className="absolute left-4 z-30 p-2.5 rounded-full bg-white/40 hover:bg-white/70 text-primary transition-all duration-300 backdrop-blur-sm shadow-md"
+            className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
             aria-label="Previous Slide"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
           </button>
 
-          {/* Right Arrow */}
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 z-30 p-2.5 rounded-full bg-white/40 hover:bg-white/70 text-primary transition-all duration-300 backdrop-blur-sm shadow-md"
-            aria-label="Next Slide"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          </button>
-
           {/* Indicator Dots */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+          <div className="flex gap-2">
             {slides.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setActiveIndex(i)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === activeIndex ? "w-6 bg-primary" : "w-2 bg-primary/30 hover:bg-primary/50"
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === activeIndex ? "w-4 bg-primary" : "w-1.5 bg-primary/30 hover:bg-primary/50"
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
               />
             ))}
           </div>
-        </>
+
+          {/* Right Arrow */}
+          <button
+            type="button"
+            onClick={nextSlide}
+            className="p-1 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
+            aria-label="Next Slide"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </div>
       )}
     </section>
   );

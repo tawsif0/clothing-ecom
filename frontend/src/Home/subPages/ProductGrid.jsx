@@ -20,6 +20,7 @@ import {
 import { FaImage } from "react-icons/fa6";
 import { motion } from "framer-motion";
 import usePublicSettings from "../../hooks/usePublicSettings";
+import useThemeColors from "../../hooks/useThemeColors";
 import {
   formatDocumentTitle,
   getDefaultPublicSettings,
@@ -126,6 +127,7 @@ const ProductGrid = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const { themeColor, buttonTextColor } = useThemeColors();
   const { isProductInCart: isProductInCartById, toggleProductInCart } =
     useCart();
   const compareItems = useSelector((state) => state.compare.items || []);
@@ -152,10 +154,7 @@ const ProductGrid = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(INITIAL_DISPLAY_LIMIT);
   const [allProductsVisible, setAllProductsVisible] = useState(false);
-  const [viewMode, setViewMode] = useState(() => {
-    const savedViewMode = localStorage.getItem("shopViewMode");
-    return savedViewMode || "grid"; // Default to grid if nothing saved
-  });
+  const viewMode = "grid";
   const [sortBy, setSortBy] = useState("featured");
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [expandedFilters, setExpandedFilters] = useState({
@@ -444,10 +443,7 @@ const ProductGrid = () => {
     [dispatch],
   );
 
-  const handleSetViewMode = (mode) => {
-    setViewMode(mode);
-    localStorage.setItem("shopViewMode", mode);
-  };
+
   const collectionLabel =
     collectionType === "deals"
       ? "Daily Deals"
@@ -1279,6 +1275,11 @@ const ProductGrid = () => {
                 <button
                   onClick={() => setShowMobileFilters(true)}
                   className="app-btn-primary rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm hover:shadow-md transition-shadow"
+                  style={{
+                    backgroundColor: themeColor,
+                    borderColor: themeColor,
+                    color: buttonTextColor,
+                  }}
                 >
                   <FiFilter /> Filters
                   {(selectedCategory !== "all" ||
@@ -1291,30 +1292,6 @@ const ProductGrid = () => {
                 </button>
 
                 <div className="flex items-center gap-3">
-                  {/* View Mode */}
-                  <div className="hidden xs:flex items-center gap-1 bg-gray-100 rounded-full p-1">
-                    <button
-                      onClick={() => setViewMode("grid")}
-                      className={`p-1.5 sm:p-2 rounded-full ${
-                        viewMode === "grid"
-                          ? "bg-black text-white"
-                          : "text-gray-600"
-                      }`}
-                    >
-                      <FiGrid className="text-sm sm:text-base" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("list")}
-                      className={`p-1.5 sm:p-2 rounded-full ${
-                        viewMode === "list"
-                          ? "bg-black text-white"
-                          : "text-gray-600"
-                      }`}
-                    >
-                      <FiList className="text-sm sm:text-base" />
-                    </button>
-                  </div>
-
                   {/* Sort Dropdown */}
                   <div className="w-[180px]">
                     <SearchableSelect
@@ -1363,29 +1340,6 @@ const ProductGrid = () => {
 
               {/* Desktop Controls */}
               <div className="hidden lg:flex items-center gap-4">
-                <div className="flex items-center gap-2 bg-gray-100 rounded-full p-1">
-                  <button
-                    onClick={() => handleSetViewMode("grid")}
-                    className={`p-2 rounded-full ${
-                      viewMode === "grid"
-                        ? "bg-black text-white"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    <FiGrid />
-                  </button>
-                  <button
-                    onClick={() => handleSetViewMode("list")}
-                    className={`p-2 rounded-full ${
-                      viewMode === "list"
-                        ? "bg-black text-white"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    <FiList />
-                  </button>
-                </div>
-
                 <div className="w-[220px]">
                   <SearchableSelect
                     value={sortBy}
@@ -1421,7 +1375,7 @@ const ProductGrid = () => {
                   Reset Filters
                 </button>
               </div>
-            ) : viewMode === "grid" ? (
+            ) : (
               /* Grid View */
               <>
                 <div className="storefront-card-grid">
@@ -1442,292 +1396,6 @@ const ProductGrid = () => {
                       />
                     </div>
                   ))}
-                </div>
-                {filteredProducts.length > INITIAL_DISPLAY_LIMIT && (
-                  <div className="text-center mt-8">
-                    <button
-                      onClick={handleViewMore}
-                      className="px-6 py-3 bg-gray-900 text-white rounded-full font-semibold hover:bg-black transition-colors text-sm sm:text-base"
-                    >
-                      {allProductsVisible ? (
-                        <>
-                          <FiChevronUp className="inline mr-2" />
-                          Show Less Products
-                        </>
-                      ) : (
-                        <>
-                          View More Products (
-                          {filteredProducts.length - INITIAL_DISPLAY_LIMIT}{" "}
-                          more)
-                          <FiChevronDown className="inline ml-2" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              /* List View */
-              <>
-                <div className="grid gap-4 md:gap-6">
-                  {filteredProducts
-                    .slice(0, displayLimit)
-                    .map((product, index) => {
-                      const categoryType = getCategoryTypeForProduct(product);
-                      const pricing = getProductPricing(product);
-                      const compared = isProductCompared(product._id);
-                      const productTypeLabel = String(
-                        product.productType || "",
-                      ).trim();
-                      const categoryTypeLabel = String(
-                        categoryType || "",
-                      ).trim();
-                      const showProductTypeBadge = Boolean(productTypeLabel);
-                      const showCategoryTypeBadge =
-                        Boolean(categoryTypeLabel) &&
-                        categoryTypeLabel.toLowerCase() !==
-                          productTypeLabel.toLowerCase();
-                      return (
-                        <motion.div
-                          key={product._id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className="group bg-white rounded-xl sm:rounded-2xl border border-gray-200 hover:shadow-xl transition-all duration-500 overflow-hidden hover:-translate-y-1 cursor-pointer"
-                          onClick={() => {
-                            persistCurrentShopScroll();
-                            navigate(`/product/${product._id}`);
-                          }}
-                        >
-                          <div className="flex flex-col lg:flex-row lg:h-64">
-                            {/* Image - Left Side */}
-                            <div className="relative lg:shrink-0 overflow-hidden">
-                              <div className="w-full h-64 lg:h-full p-6 flex items-center justify-center">
-                                <div className="relative mx-auto h-full w-full rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:scale-[0.94] hover:shadow-2xl lg:h-52 lg:w-52">
-                                  <ProductImage
-                                    src={product.images && product.images[0]}
-                                    alt={product.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                  {!product.images?.[0] && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-gray-100 to-gray-200">
-                                      <div className="text-center text-gray-400 p-6">
-                                        <svg
-                                          className="w-16 h-16 mx-auto mb-2"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={1.5}
-                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                          />
-                                        </svg>
-                                        <p className="text-sm font-medium">
-                                          No Image
-                                        </p>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Content - Right Side */}
-                            <div className="flex-1 p-6 lg:pl-2">
-                              <div className="flex flex-col h-full">
-                                {/* Header */}
-                                <div className="flex-1">
-                                  <div className="flex items-start justify-between mb-4">
-                                    <div className="flex-1 min-w-0 pr-4">
-                                      <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-1 hover:text-black transition-colors group-hover:underline">
-                                        {highlightText(
-                                          product.title,
-                                          searchTerm,
-                                        )}
-                                      </h2>
-                                      {/* Category & Price Badges */}
-                                      <div className="flex flex-wrap items-center gap-2 mb-4">
-                                        {product.category?.name && (
-                                          <span className="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
-                                            {product.category.name}
-                                          </span>
-                                        )}
-                                        {showProductTypeBadge && (
-                                          <span className="px-3 py-1.5 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded-lg">
-                                            {productTypeLabel}
-                                          </span>
-                                        )}
-                                        {product.marketplaceType && (
-                                          <span className="px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg capitalize">
-                                            {product.marketplaceType}
-                                          </span>
-                                        )}
-                                        {isPublicStockVisible(
-                                          product,
-                                          settings,
-                                        ) && (
-                                          <span className="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
-                                            {getPublicStockBadgeText(
-                                              product,
-                                              null,
-                                              settings,
-                                            )}
-                                          </span>
-                                        )}
-
-                                        <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded">
-                                          {product.brand}
-                                        </span>
-                                        {showCategoryTypeBadge && (
-                                          <span className=" bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-                                            {categoryTypeLabel}
-                                          </span>
-                                        )}
-                                      </div>
-
-                                      {/* Description */}
-                                      {product.description && (
-                                        <p className="text-gray-600 leading-relaxed line-clamp-2 text-sm mb-4">
-                                          {highlightText(
-                                            product.description,
-                                            searchTerm,
-                                          )}
-                                        </p>
-                                      )}
-
-                                      {/* Dimensions */}
-                                      {product.dimensions ? (
-                                        <div className="flex flex-col gap-2 mb-6">
-                                          {product.dimensions && (
-                                            <div className="text-xs font-medium text-gray-500">
-                                              Dim: {product.dimensions}
-                                            </div>
-                                          )}
-                                        </div>
-                                      ) : null}
-                                    </div>
-
-                                    {/* Price & View Button - Right Aligned */}
-                                    <div className="flex flex-col items-end gap-4 mt-2 lg:mt-0 lg:text-right">
-                                      {(() => {
-                                        const inCart = isProductInCart(
-                                          product._id,
-                                        );
-                                        const showCardCartButton =
-                                          !hasVariantOptionPricing(product);
-                                        return (
-                                          <>
-                                            {pricing.isTba ? (
-                                              <div className="text-2xl font-bold text-black whitespace-nowrap">
-                                                TBA
-                                              </div>
-                                            ) : (
-                                              <div className="flex items-baseline gap-2 whitespace-nowrap">
-                                                {pricing.hasDiscount && (
-                                                  <span className="text-sm text-gray-400 line-through">
-                                                    {`${pricing.previousPrice.toFixed(2)} Tk`}
-                                                  </span>
-                                                )}
-                                                <div className="text-2xl font-bold text-black">
-                                                  {`${Number(pricing.currentPrice || 0).toFixed(2)} Tk`}
-                                                </div>
-                                              </div>
-                                            )}
-                                            <div className="flex items-center gap-2">
-                                              {showCardCartButton ? (
-                                                <button
-                                                  type="button"
-                                                  onClick={async (e) => {
-                                                    e.stopPropagation();
-                                                    await handleToggleCart(
-                                                      product,
-                                                    );
-                                                  }}
-                                                  className={`inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-sm transition-colors ${
-                                                    inCart
-                                                      ? "border-emerald-600 bg-emerald-600 text-white hover:border-emerald-700 hover:bg-emerald-700"
-                                                      : "border-gray-300 bg-white text-gray-600 hover:border-black hover:text-black"
-                                                  }`}
-                                                >
-                                                  <FiShoppingBag className="h-4 w-4" />
-                                                </button>
-                                              ) : null}
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleToggleCompare(product);
-                                                }}
-                                                className={`inline-flex h-10 w-10 items-center justify-center rounded-full border bg-white shadow-sm transition-colors ${
-                                                  compared
-                                                    ? "border-black bg-black text-white"
-                                                    : "border-gray-300 text-gray-600 hover:border-black hover:text-black"
-                                                }`}
-                                              >
-                                                <FiShuffle className="h-4 w-4" />
-                                              </button>
-                                              <button
-                                                type="button"
-                                                onClick={async (e) => {
-                                                  e.stopPropagation();
-                                                  await handleToggleWishlist(
-                                                    product,
-                                                  );
-                                                }}
-                                                disabled={wishlistPendingIds.includes(
-                                                  String(product._id || ""),
-                                                )}
-                                                className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors disabled:opacity-60 ${
-                                                  isProductWishlisted(
-                                                    product._id,
-                                                  )
-                                                    ? "border-red-500 bg-red-50 text-red-600"
-                                                    : "border-black bg-white text-black hover:border-red-500 hover:text-red-500"
-                                                }`}
-                                              >
-                                                <FiHeart
-                                                  className={`h-4 w-4 ${
-                                                    isProductWishlisted(
-                                                      product._id,
-                                                    )
-                                                      ? "fill-current"
-                                                      : ""
-                                                  }`}
-                                                />
-                                              </button>
-                                              <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  persistCurrentShopScroll();
-                                                  navigate(
-                                                    `/product/${product._id}`,
-                                                  );
-                                                }}
-                                                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-black transition hover:border-black hover:bg-gray-50"
-                                                aria-label="View details"
-                                                title="View details"
-                                              >
-                                                <FiEye className="h-4 w-4" />
-                                                <span className="sr-only">
-                                                  View details
-                                                </span>
-                                              </button>
-                                            </div>
-                                          </>
-                                        );
-                                      })()}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
                 </div>
                 {filteredProducts.length > INITIAL_DISPLAY_LIMIT && (
                   <div className="text-center mt-8">

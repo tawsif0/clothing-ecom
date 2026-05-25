@@ -109,6 +109,123 @@ const ModuleCollectionSetup = () => {
     }
   };
 
+  const BentoLinkSelector = ({ index, label }) => {
+    const linkKey = `bento${index + 1}Link`;
+    const linkValue = settings?.storefront?.[linkKey] || "";
+
+    const currentCategoryId = useMemo(() => {
+      if (!linkValue) return "";
+      const match = linkValue.match(/[?&]category=([^&]+)/);
+      return match ? match[1] : "";
+    }, [linkValue]);
+
+    const currentCategory = useMemo(() => {
+      return categories.find((c) => c._id === currentCategoryId);
+    }, [categories, currentCategoryId]);
+
+    const [selectedType, setSelectedType] = useState("");
+
+    useEffect(() => {
+      if (currentCategory) {
+        setSelectedType(currentCategory.type || "General");
+      }
+    }, [currentCategory]);
+
+    const uniqueTypes = useMemo(() => {
+      const types = new Set(categories.map((c) => c.type || "General"));
+      return Array.from(types).sort();
+    }, [categories]);
+
+    const filteredCategories = useMemo(() => {
+      if (!selectedType) return [];
+      return categories.filter((c) => (c.type || "General") === selectedType);
+    }, [categories, selectedType]);
+
+    const handleTypeChange = (e) => {
+      const nextType = e.target.value;
+      setSelectedType(nextType);
+      
+      const firstCatOfNextType = categories.find((c) => (c.type || "General") === nextType);
+      if (firstCatOfNextType) {
+        const nextLink = `/shop?category=${firstCatOfNextType._id}`;
+        dispatch(
+          updateAdminNestedField({
+            section: "storefront",
+            key: linkKey,
+            value: nextLink,
+          })
+        );
+        updateBentoSlot(index, firstCatOfNextType._id);
+      } else {
+        dispatch(
+          updateAdminNestedField({
+            section: "storefront",
+            key: linkKey,
+            value: "",
+          })
+        );
+        updateBentoSlot(index, "");
+      }
+    };
+
+    const handleCategoryChange = (e) => {
+      const nextCatId = e.target.value;
+      const nextLink = nextCatId ? `/shop?category=${nextCatId}` : "";
+      dispatch(
+        updateAdminNestedField({
+          section: "storefront",
+          key: linkKey,
+          value: nextLink,
+        })
+      );
+      updateBentoSlot(index, nextCatId);
+    };
+
+    return (
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-black">{label}</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <span className="mb-1 block text-xs text-gray-400 font-medium">Category Type</span>
+            <select
+              value={selectedType}
+              onChange={handleTypeChange}
+              className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            >
+              <option value="" disabled>Select Category Type</option>
+              {uniqueTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <span className="mb-1 block text-xs text-gray-400 font-medium">Category Name</span>
+            <select
+              value={currentCategoryId}
+              onChange={handleCategoryChange}
+              disabled={!selectedType}
+              className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black disabled:bg-gray-50 disabled:text-gray-400"
+            >
+              <option value="">Select Category Name</option>
+              {filteredCategories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        {linkValue && (
+          <p className="text-xs text-gray-500 font-mono mt-1">
+            Path: <span className="bg-gray-100 px-1.5 py-0.5 rounded">{linkValue}</span>
+          </p>
+        )}
+      </div>
+    );
+  };
+
   const categoryOptions = useMemo(
     () =>
       categories.map((cat) => ({
@@ -172,9 +289,8 @@ if (adminStatus === "failed") {
                   <label className="mb-1.5 block text-sm font-medium text-black">Title</label>
                   <input type="text" value={settings?.storefront?.bento1Title ?? "Abayas"} onChange={(e) => dispatch(updateAdminNestedField({ section: "storefront", key: "bento1Title", value: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
                 </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-black">Link</label>
-                  <input type="text" value={settings?.storefront?.bento1Link ?? "/shop?category=6a114ac25ff06c9c0c20cbd7"} onChange={(e) => dispatch(updateAdminNestedField({ section: "storefront", key: "bento1Link", value: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
+                <div className="md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <BentoLinkSelector index={0} label="Select Category Collection" />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-black">Button Text</label>
@@ -202,9 +318,8 @@ if (adminStatus === "failed") {
                   <label className="mb-1.5 block text-sm font-medium text-black">Title</label>
                   <input type="text" value={settings?.storefront?.bento2Title ?? "Hijabs"} onChange={(e) => dispatch(updateAdminNestedField({ section: "storefront", key: "bento2Title", value: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
                 </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-black">Link</label>
-                  <input type="text" value={settings?.storefront?.bento2Link ?? "/shop?category=6a114ac25ff06c9c0c20cbd8"} onChange={(e) => dispatch(updateAdminNestedField({ section: "storefront", key: "bento2Link", value: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
+                <div className="md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <BentoLinkSelector index={1} label="Select Category Collection" />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-black">Button Text</label>
@@ -232,9 +347,8 @@ if (adminStatus === "failed") {
                   <label className="mb-1.5 block text-sm font-medium text-black">Title</label>
                   <input type="text" value={settings?.storefront?.bento3Title ?? "Evening Wear"} onChange={(e) => dispatch(updateAdminNestedField({ section: "storefront", key: "bento3Title", value: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
                 </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-black">Link</label>
-                  <input type="text" value={settings?.storefront?.bento3Link ?? "/shop?category=6a114ac25ff06c9c0c20cbdb"} onChange={(e) => dispatch(updateAdminNestedField({ section: "storefront", key: "bento3Link", value: e.target.value }))} className="w-full rounded border px-3 py-2 text-sm" />
+                <div className="md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <BentoLinkSelector index={2} label="Select Category Collection" />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-black">Button Text</label>
@@ -298,26 +412,8 @@ if (adminStatus === "failed") {
                 className="w-full rounded border px-3 py-2 text-sm"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-black">Button Text</label>
-                <input
-                  type="text"
-                  value={settings?.storefront?.brandStoryButtonText ?? "Read Our Story"}
-                  onChange={(e) => dispatch(updateAdminNestedField({ section: "storefront", key: "brandStoryButtonText", value: e.target.value }))}
-                  className="w-full rounded border px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-black">Button Link</label>
-                <input
-                  type="text"
-                  value={settings?.storefront?.brandStoryButtonLink ?? "#"}
-                  onChange={(e) => dispatch(updateAdminNestedField({ section: "storefront", key: "brandStoryButtonLink", value: e.target.value }))}
-                  className="w-full rounded border px-3 py-2 text-sm"
-                />
-              </div>
-              <div className="md:col-span-2">
                 <label className="mb-1.5 block text-sm font-medium text-black">Image</label>
                 <div className="flex gap-4 items-start">
                   <div className="flex-1">

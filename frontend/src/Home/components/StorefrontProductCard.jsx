@@ -175,9 +175,9 @@ const StorefrontProductCard = ({
   buttonLabel = "View details",
   className = "",
   onViewDetails,
-  showCompareButton = true,
+  showCompareButton = false,
   showWishlistButton = true,
-  showCartButton = true,
+  showCartButton = false,
   onCartActionComplete,
 }) => {
   const dispatch = useDispatch();
